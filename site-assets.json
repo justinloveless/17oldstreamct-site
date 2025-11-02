@@ -1,0 +1,52 @@
+{
+  "version": "1.0",
+  "description": "Configuration file defining manageable assets for this static site",
+  "assets": [
+    {
+      "path": "images/hero.jpg",
+      "type": "image",
+      "label": "Hero Image",
+      "description": "Main homepage hero/banner image",
+      "maxSize": 2097152,
+      "allowedExtensions": [
+        ".jpg",
+        ".png",
+        ".webp"
+      ]
+    },
+    {
+      "path": "images/logo.png",
+      "type": "image",
+      "label": "Site Logo",
+      "description": "Primary logo displayed in header",
+      "maxSize": 524288,
+      "allowedExtensions": [
+        ".png",
+        ".svg",
+        ".webp"
+      ]
+    },
+    {
+      "path": "content/about.md",
+      "type": "text",
+      "label": "About Page Content",
+      "description": "Markdown content for the about page",
+      "maxSize": 51200,
+      "allowedExtensions": [
+        ".md"
+      ]
+    },
+    {
+      "path": "images/gallery",
+      "type": "directory",
+      "label": "Photo Gallery",
+      "description": "Collection of gallery images",
+      "maxSize": 2097152,
+      "allowedExtensions": [
+        ".jpg",
+        ".png",
+        ".webp"
+      ]
+    }
+  ]
+}
