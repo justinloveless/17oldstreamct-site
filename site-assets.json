@@ -41,7 +41,7 @@
       "type": "directory",
       "label": "Photo Gallery",
       "description": "Collection of gallery images",
-      "maxSize": 2097152,
+      "maxSize": 209715200,
       "allowedExtensions": [
         ".jpg",
         ".png",
