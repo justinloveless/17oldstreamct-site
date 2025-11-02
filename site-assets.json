@@ -37,7 +37,7 @@
       ]
     },
     {
-      "path": "images/gallery",
+      "path": "assets",
       "type": "directory",
       "label": "Photo Gallery",
       "description": "Collection of gallery images",
