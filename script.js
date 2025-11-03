@@ -25,9 +25,9 @@ async function loadContentFiles() {
             const response = await fetch(asset.path);
             if (!response.ok) continue;
 
-            if (asset.path.endsWith('.json')) {
+            if (asset.type === 'json' || asset.path.endsWith('.json')) {
                 contentData[asset.path] = await response.json();
-            } else if (asset.path.endsWith('.md')) {
+            } else if (asset.type === 'text' && asset.path.endsWith('.md')) {
                 const text = await response.text();
                 contentData[asset.path] = text;
             }

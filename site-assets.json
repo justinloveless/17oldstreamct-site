@@ -4,11 +4,63 @@
   "assets": [
     {
       "path": "content/property.json",
-      "type": "text",
+      "type": "json",
       "label": "Property Information",
       "description": "Property address, location, price, and details",
       "maxSize": 5120,
-      "allowedExtensions": [".json"]
+      "allowedExtensions": [".json"],
+      "schema": {
+        "type": "object",
+        "required": ["address", "location", "price"],
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "Street address of the property"
+          },
+          "location": {
+            "type": "string",
+            "description": "City, state, and ZIP code"
+          },
+          "price": {
+            "type": "string",
+            "description": "Price formatted as a string (e.g., '$379,000')"
+          },
+          "zillowUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL to the property listing on Zillow"
+          },
+          "details": {
+            "type": "object",
+            "properties": {
+              "bedrooms": {
+                "type": "string",
+                "description": "Number of bedrooms"
+              },
+              "bathrooms": {
+                "type": "string",
+                "description": "Number of bathrooms"
+              },
+              "squareFeet": {
+                "type": "string",
+                "description": "Square footage (e.g., '1,456')"
+              },
+              "lotSize": {
+                "type": "string",
+                "description": "Lot size (e.g., '10,794 sqft')"
+              },
+              "yearBuilt": {
+                "type": "string",
+                "description": "Year the property was built"
+              },
+              "pricePerSqft": {
+                "type": "string",
+                "description": "Price per square foot (e.g., '$260')"
+              }
+            }
+          }
+        }
+      }
     },
     {
       "path": "assets/3c34242da33b88cdd1c94af6c1c807e0-cc_ft_768.webp",
@@ -20,11 +72,29 @@
     },
     {
       "path": "content/hero-description.json",
-      "type": "text",
+      "type": "json",
       "label": "Hero Description",
       "description": "Hero section title, subtitle, and alt text",
       "maxSize": 2048,
-      "allowedExtensions": [".json"]
+      "allowedExtensions": [".json"],
+      "schema": {
+        "type": "object",
+        "required": ["title", "subtitle"],
+        "properties": {
+          "alt": {
+            "type": "string",
+            "description": "Alt text for the hero image"
+          },
+          "title": {
+            "type": "string",
+            "description": "Main hero title displayed over the image"
+          },
+          "subtitle": {
+            "type": "string",
+            "description": "Hero subtitle displayed below the title"
+          }
+        }
+      }
     },
     {
       "path": "content/summary.md",
@@ -44,11 +114,28 @@
     },
     {
       "path": "content/image-descriptions.json",
-      "type": "text",
+      "type": "json",
       "label": "Image Descriptions",
       "description": "Optional JSON file mapping image filenames to alt text and descriptions",
       "maxSize": 51200,
-      "allowedExtensions": [".json"]
+      "allowedExtensions": [".json"],
+      "schema": {
+        "type": "object",
+        "description": "Object where keys are image filenames and values are description objects",
+        "additionalProperties": {
+          "type": "object",
+          "properties": {
+            "alt": {
+              "type": "string",
+              "description": "Alt text for the image (optional, defaults to empty string)"
+            },
+            "description": {
+              "type": "string",
+              "description": "Description of the image (optional)"
+            }
+          }
+        }
+      }
     }
   ]
 }
