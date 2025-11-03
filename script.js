@@ -1,42 +1,116 @@
 // Load site assets and populate content
-let siteData = null;
+let siteAssets = null;
+let contentData = {};
 
 async function loadSiteAssets() {
     try {
         const response = await fetch('site-assets.json');
-        siteData = await response.json();
+        siteAssets = await response.json();
+        await loadContentFiles();
         populateContent();
     } catch (error) {
         console.error('Error loading site assets:', error);
     }
 }
 
-function populateContent() {
-    if (!siteData) return;
+async function loadContentFiles() {
+    if (!siteAssets || !siteAssets.assets) return;
 
-    // Populate hero section
-    if (siteData.hero) {
-        const heroImg = document.getElementById('hero-img');
-        if (heroImg && siteData.hero.image) {
-            heroImg.src = siteData.hero.image;
-            heroImg.alt = siteData.hero.alt || '';
+    // Load all content files defined in assets
+    for (const asset of siteAssets.assets) {
+        try {
+            const response = await fetch(asset.path);
+            if (!response.ok) continue;
+
+            if (asset.path.endsWith('.json')) {
+                contentData[asset.path] = await response.json();
+            } else if (asset.path.endsWith('.md')) {
+                const text = await response.text();
+                contentData[asset.path] = text;
+            }
+        } catch (error) {
+            console.warn(`Failed to load ${asset.path}:`, error);
         }
-        const heroTitle = document.querySelector('.hero-title');
-        if (heroTitle && siteData.hero.title) {
-            heroTitle.textContent = siteData.hero.title;
+    }
+}
+
+function populateContent() {
+    // Load property data
+    const propertyData = contentData['content/property.json'];
+    if (propertyData) {
+        const addressEl = document.querySelector('.address');
+        if (addressEl && propertyData.address) {
+            addressEl.textContent = propertyData.address;
         }
-        const heroSubtitle = document.querySelector('.hero-subtitle');
-        if (heroSubtitle && siteData.hero.subtitle) {
-            heroSubtitle.textContent = siteData.hero.subtitle;
+        const locationEl = document.querySelector('.location');
+        if (locationEl && propertyData.location) {
+            locationEl.textContent = propertyData.location;
+        }
+        const priceEl = document.querySelector('.price');
+        if (priceEl && propertyData.price) {
+            priceEl.textContent = propertyData.price;
+        }
+        const zillowLinks = document.querySelectorAll('.zillow-link, .contact-zillow');
+        zillowLinks.forEach(link => {
+            if (propertyData.zillowUrl) {
+                link.href = propertyData.zillowUrl;
+            }
+        });
+
+        // Populate property details
+        if (propertyData.details) {
+            const details = propertyData.details;
+            const detailItems = document.querySelectorAll('.detail-item');
+            detailItems.forEach(item => {
+                const label = item.querySelector('.detail-label');
+                if (label) {
+                    const labelText = label.textContent.trim();
+                    const value = item.querySelector('.detail-value');
+                    if (value) {
+                        if (labelText.includes('Bedrooms')) {
+                            value.textContent = details.bedrooms || '';
+                        } else if (labelText.includes('Bathrooms')) {
+                            value.textContent = details.bathrooms || '';
+                        } else if (labelText.includes('Square Feet')) {
+                            value.textContent = details.squareFeet || '';
+                        } else if (labelText.includes('Lot Size')) {
+                            value.textContent = details.lotSize || '';
+                        } else if (labelText.includes('Year Built')) {
+                            value.textContent = details.yearBuilt || '';
+                        } else if (labelText.includes('Price/sqft')) {
+                            value.textContent = details.pricePerSqft || '';
+                        }
+                    }
+                }
+            });
         }
     }
 
-    // Populate gallery
-    if (siteData.gallery && Array.isArray(siteData.gallery)) {
+    // Load hero data
+    const heroData = contentData['content/hero.json'];
+    if (heroData) {
+        const heroImg = document.getElementById('hero-img');
+        if (heroImg && heroData.image) {
+            heroImg.src = heroData.image;
+            heroImg.alt = heroData.alt || '';
+        }
+        const heroTitle = document.querySelector('.hero-title');
+        if (heroTitle && heroData.title) {
+            heroTitle.textContent = heroData.title;
+        }
+        const heroSubtitle = document.querySelector('.hero-subtitle');
+        if (heroSubtitle && heroData.subtitle) {
+            heroSubtitle.textContent = heroData.subtitle;
+        }
+    }
+
+    // Load gallery manifest
+    const galleryManifest = contentData['assets/manifest.json'];
+    if (galleryManifest && Array.isArray(galleryManifest)) {
         const galleryGrid = document.getElementById('gallery-grid');
         if (galleryGrid) {
             galleryGrid.innerHTML = '';
-            siteData.gallery.forEach((item, index) => {
+            galleryManifest.forEach((item, index) => {
                 const galleryItem = document.createElement('div');
                 galleryItem.className = 'gallery-item';
                 const img = document.createElement('img');
@@ -49,97 +123,88 @@ function populateContent() {
         }
     }
 
-    // Populate summary section
-    if (siteData.summary) {
-        const summaryHeading = document.querySelector('.summary h2');
-        if (summaryHeading && siteData.summary.heading) {
-            summaryHeading.textContent = siteData.summary.heading;
-        }
-
-        const summaryDescription = document.querySelector('.summary .container > p:first-of-type');
-        if (summaryDescription && siteData.summary.description) {
-            summaryDescription.textContent = siteData.summary.description;
-        }
-
-        const highlightsGrid = document.querySelector('.highlights-grid');
-        if (highlightsGrid && siteData.summary.highlights && Array.isArray(siteData.summary.highlights)) {
-            highlightsGrid.innerHTML = '';
-            siteData.summary.highlights.forEach(highlight => {
-                const highlightItem = document.createElement('div');
-                highlightItem.className = 'highlight-item';
-                const title = document.createElement('h4');
-                title.textContent = highlight.title;
-                const description = document.createElement('p');
-                description.textContent = highlight.description;
-                highlightItem.appendChild(title);
-                highlightItem.appendChild(description);
-                highlightsGrid.appendChild(highlightItem);
-            });
-        }
-
-        const summaryFooter = document.querySelector('.summary-footer');
-        if (summaryFooter && siteData.summary.footer) {
-            summaryFooter.textContent = siteData.summary.footer;
-        }
-
-        const summaryNote = document.querySelector('.summary-note');
-        if (summaryNote && siteData.summary.note) {
-            summaryNote.innerHTML = siteData.summary.note;
-        }
-    }
-
-    // Populate property details
-    if (siteData.property && siteData.property.details) {
-        const details = siteData.property.details;
-        const detailItems = document.querySelectorAll('.detail-item');
-        detailItems.forEach(item => {
-            const label = item.querySelector('.detail-label');
-            if (label) {
-                const labelText = label.textContent.trim();
-                const value = item.querySelector('.detail-value');
-                if (value) {
-                    if (labelText.includes('Bedrooms')) {
-                        value.textContent = details.bedrooms || '';
-                    } else if (labelText.includes('Bathrooms')) {
-                        value.textContent = details.bathrooms || '';
-                    } else if (labelText.includes('Square Feet')) {
-                        value.textContent = details.squareFeet || '';
-                    } else if (labelText.includes('Lot Size')) {
-                        value.textContent = details.lotSize || '';
-                    } else if (labelText.includes('Year Built')) {
-                        value.textContent = details.yearBuilt || '';
-                    } else if (labelText.includes('Price/sqft')) {
-                        value.textContent = details.pricePerSqft || '';
-                    }
-                }
-            }
-        });
-    }
-
-    // Populate header
-    if (siteData.property) {
-        const addressEl = document.querySelector('.address');
-        if (addressEl && siteData.property.address) {
-            addressEl.textContent = siteData.property.address;
-        }
-        const locationEl = document.querySelector('.location');
-        if (locationEl && siteData.property.location) {
-            locationEl.textContent = siteData.property.location;
-        }
-        const priceEl = document.querySelector('.price');
-        if (priceEl && siteData.property.price) {
-            priceEl.textContent = siteData.property.price;
-        }
-        const zillowLinks = document.querySelectorAll('.zillow-link, .contact-zillow');
-        zillowLinks.forEach(link => {
-            if (siteData.property.zillowUrl) {
-                link.href = siteData.property.zillowUrl;
-            }
-        });
+    // Load summary markdown
+    const summaryMarkdown = contentData['content/summary.md'];
+    if (summaryMarkdown) {
+        parseAndPopulateSummary(summaryMarkdown);
     }
 
     // Initialize lightbox after gallery is populated
     initializeLightbox();
+}
+
+function parseAndPopulateSummary(markdown) {
+    const lines = markdown.split('\n');
+    const summarySection = document.querySelector('.summary');
+    if (!summarySection) return;
+
+    const container = summarySection.querySelector('.container');
+    if (!container) return;
+
+    // Clear existing content except the container
+    container.innerHTML = '';
+
+    let currentElement = null;
+    let highlightsContainer = null;
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+
+        if (!line) continue;
+
+        // Parse heading levels
+        if (line.startsWith('# ')) {
+            const h2 = document.createElement('h2');
+            h2.textContent = line.substring(2);
+            container.appendChild(h2);
+            currentElement = null;
+        } else if (line.startsWith('## ')) {
+            const h3 = document.createElement('h3');
+            h3.textContent = line.substring(3);
+            container.appendChild(h3);
+            currentElement = null;
+        } else if (line.startsWith('### ')) {
+            // This is a highlight title
+            if (!highlightsContainer) {
+                highlightsContainer = document.createElement('div');
+                highlightsContainer.className = 'highlights-grid';
+                container.appendChild(highlightsContainer);
+            }
+            const highlightItem = document.createElement('div');
+            highlightItem.className = 'highlight-item';
+            const h4 = document.createElement('h4');
+            h4.textContent = line.substring(4);
+            highlightItem.appendChild(h4);
+            highlightsContainer.appendChild(highlightItem);
+            currentElement = highlightItem;
+        } else if (line === '---') {
+            // Horizontal rule - start footer section
+            currentElement = null;
+        } else if (line.match(/^[????]/)) {
+            // Emoji line - summary note
+            const note = document.createElement('p');
+            note.className = 'summary-note';
+            note.innerHTML = line.replace(/\n/g, '<br>');
+            container.appendChild(note);
+            currentElement = null;
+        } else if (line) {
+            // Regular paragraph
+            if (currentElement && currentElement.classList.contains('highlight-item')) {
+                // This is highlight description
+                const p = document.createElement('p');
+                p.textContent = line;
+                currentElement.appendChild(p);
+            } else {
+                // Regular paragraph or footer
+                const p = document.createElement('p');
+                if (i > 0 && lines[i - 1].trim() === '---') {
+                    p.className = 'summary-footer';
+                }
+                p.textContent = line;
+                container.appendChild(p);
+            }
+        }
+    }
 }
 
 // Image gallery lightbox functionality

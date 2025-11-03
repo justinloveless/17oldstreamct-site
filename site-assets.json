@@ -1,143 +1,38 @@
 {
   "version": "1.0",
   "description": "Configuration file defining manageable assets for this static site",
-  "property": {
-    "address": "17 Oldstream Ct",
-    "location": "Spring, TX 77381",
-    "price": "$379,000",
-    "zillowUrl": "https://www.zillow.com/homedetails/17-Oldstream-Ct-Spring-TX-77381/28772267_zpid/",
-    "details": {
-      "bedrooms": "3",
-      "bathrooms": "2",
-      "squareFeet": "1,456",
-      "lotSize": "10,794 sqft",
-      "yearBuilt": "1980",
-      "pricePerSqft": "$260"
-    }
-  },
-  "hero": {
-    "image": "assets/3c34242da33b88cdd1c94af6c1c807e0-cc_ft_768.webp",
-    "alt": "17 Oldstream Ct exterior",
-    "title": "Beautifully Remodeled Home",
-    "subtitle": "Prime Cul-de-Sac Location in The Woodlands"
-  },
-  "summary": {
-    "heading": "Beautifully Remodeled Home in The Woodlands ? Prime Cul-de-Sac Location",
-    "description": "Welcome to this stunning one-story, 3-bedroom, 2-bath, 2-car garage home in one of the most desirable neighborhoods of The Woodlands. Situated on a peaceful cul-de-sac, this home has been completely remodeled inside and out with modern updates that blend style, comfort, and efficiency.",
-    "highlights": [
-      {
-        "title": "Energy-efficient upgrades",
-        "description": "Brand new roof (installation scheduled for November 5, 2025), new Carrier HVAC system with premium C8 ductwork, Simonton insulated windows, and LP Smart Siding installed over new OSB decking."
-      },
-      {
-        "title": "Electrical and lighting updates",
-        "description": "New upgraded electrical panel, stylish lighting fixtures, modern switches, and ceiling fans throughout."
-      },
-      {
-        "title": "Beautiful interior finishes",
-        "description": "Inviting living room with new fireplace doors and a custom-stained mantel, creating a warm and cozy atmosphere."
-      },
-      {
-        "title": "Modern kitchen",
-        "description": "Fully renovated with new appliances, updated lighting, and a layout designed for family gatherings and entertaining."
-      },
-      {
-        "title": "Spacious backyard",
-        "description": "Large, newly fenced yard?perfect for kids, pets, and outdoor relaxation?with easy access through new patio doors."
-      }
-    ],
-    "footer": "You'll appreciate the thoughtful attention to detail and the move-in-ready quality of this home. Come see for yourself why this property is the perfect place to create lasting memories with your family.",
-    "note": "?? More photos coming soon, featuring the new roof and recent landscaping updates.<br>?? Open house to be announced soon!"
-  },
-  "gallery": [
-    {
-      "path": "assets/0fa0e05047f2ab459dd0bc2df9dd3191-cc_ft_384.webp",
-      "alt": "Property photo 1",
-      "description": "Exterior view of the home"
-    },
-    {
-      "path": "assets/3c34242da33b88cdd1c94af6c1c807e0-cc_ft_768.webp",
-      "alt": "Property photo 2",
-      "description": "Front exterior showing the beautiful facade"
-    },
-    {
-      "path": "assets/7228a021b3ba214d801cb951d59bce8a-cc_ft_768.webp",
-      "alt": "Property photo 3",
-      "description": "Interior living space"
-    },
-    {
-      "path": "assets/8919d962cb8a17700786f919928a805b-cc_ft_384.webp",
-      "alt": "Property photo 4",
-      "description": "Kitchen area"
-    },
-    {
-      "path": "assets/894ba60632c16927f03ee1e84c53c669-cc_ft_384.webp",
-      "alt": "Property photo 5",
-      "description": "Bedroom view"
-    },
-    {
-      "path": "assets/8da369541b8e3425c263272dde9f2044-cc_ft_768.webp",
-      "alt": "Property photo 6",
-      "description": "Another interior view"
-    },
-    {
-      "path": "assets/a974c0411caccbb63ce284966c93b61a-cc_ft_768.webp",
-      "alt": "Property photo 7",
-      "description": "Additional property feature"
-    },
-    {
-      "path": "assets/ac2f6eebcec7d7052843452ba118d314-cc_ft_768.webp",
-      "alt": "Property photo 8",
-      "description": "Exterior landscaping"
-    },
-    {
-      "path": "assets/afc082bece7328ecff1a34f7b511dd7e-cc_ft_384.webp",
-      "alt": "Property photo 9",
-      "description": "Backyard view"
-    },
-    {
-      "path": "assets/b96459b9f5be0e40f9251f50f145754a-cc_ft_384.webp",
-      "alt": "Property photo 10",
-      "description": "Additional interior space"
-    },
-    {
-      "path": "assets/bab946e363d5c9aac722298697c4f93f-cc_ft_384.webp",
-      "alt": "Property photo 11",
-      "description": "Property detail"
-    }
-  ],
   "assets": [
     {
-      "path": "images/hero.jpg",
-      "type": "image",
-      "label": "Hero Image",
-      "description": "Main homepage hero/banner image",
-      "maxSize": 2097152,
-      "allowedExtensions": [".jpg", ".png", ".webp"]
-    },
-    {
-      "path": "images/logo.png",
-      "type": "image",
-      "label": "Site Logo",
-      "description": "Primary logo displayed in header",
-      "maxSize": 524288,
-      "allowedExtensions": [".png", ".svg", ".webp"]
-    },
-    {
-      "path": "content/about.md",
+      "path": "content/property.json",
       "type": "text",
-      "label": "About Page Content",
-      "description": "Markdown content for the about page",
+      "label": "Property Information",
+      "description": "Property address, location, price, and details",
+      "maxSize": 5120,
+      "allowedExtensions": [".json"]
+    },
+    {
+      "path": "content/hero.json",
+      "type": "text",
+      "label": "Hero Section",
+      "description": "Hero image and text content",
+      "maxSize": 2048,
+      "allowedExtensions": [".json"]
+    },
+    {
+      "path": "content/summary.md",
+      "type": "text",
+      "label": "Summary Content",
+      "description": "Markdown content for the property summary section",
       "maxSize": 51200,
       "allowedExtensions": [".md"]
     },
     {
-      "path": "assets",
-      "type": "directory",
-      "label": "Photo Gallery",
-      "description": "Collection of gallery images",
-      "maxSize": 209715200,
-      "allowedExtensions": [".jpg", ".png", ".webp"]
+      "path": "assets/manifest.json",
+      "type": "text",
+      "label": "Photo Gallery Manifest",
+      "description": "JSON manifest listing all gallery images",
+      "maxSize": 51200,
+      "allowedExtensions": [".json"]
     }
   ]
 }
