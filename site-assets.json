@@ -27,10 +27,18 @@
       "allowedExtensions": [".md"]
     },
     {
-      "path": "assets/manifest.json",
+      "path": "assets",
+      "type": "directory",
+      "label": "Photo Gallery",
+      "description": "Directory containing gallery images. All images listed in image-descriptions.json will be displayed in the gallery.",
+      "maxSize": 209715200,
+      "allowedExtensions": [".jpg", ".jpeg", ".png", ".webp"]
+    },
+    {
+      "path": "content/image-descriptions.json",
       "type": "text",
-      "label": "Photo Gallery Manifest",
-      "description": "JSON manifest listing all gallery images",
+      "label": "Image Descriptions",
+      "description": "Optional JSON file mapping image filenames to alt text and descriptions",
       "maxSize": 51200,
       "allowedExtensions": [".json"]
     }

@@ -16,8 +16,11 @@ async function loadSiteAssets() {
 async function loadContentFiles() {
     if (!siteAssets || !siteAssets.assets) return;
 
-    // Load all content files defined in assets
+    // Load all content files defined in assets (skip directory assets)
     for (const asset of siteAssets.assets) {
+        // Skip directory assets - they're just metadata for the upload tool
+        if (asset.type === 'directory') continue;
+        
         try {
             const response = await fetch(asset.path);
             if (!response.ok) continue;
@@ -104,18 +107,31 @@ function populateContent() {
         }
     }
 
-    // Load gallery manifest
-    const galleryManifest = contentData['assets/manifest.json'];
-    if (galleryManifest && Array.isArray(galleryManifest)) {
+    // Load gallery images from directory using image-descriptions.json
+    const imageDescriptions = contentData['content/image-descriptions.json'];
+    const galleryDirectoryAsset = siteAssets.assets.find(asset => asset.type === 'directory' && asset.label === 'Photo Gallery');
+    
+    if (imageDescriptions && galleryDirectoryAsset) {
         const galleryGrid = document.getElementById('gallery-grid');
         if (galleryGrid) {
             galleryGrid.innerHTML = '';
-            galleryManifest.forEach((item, index) => {
+            const galleryPath = galleryDirectoryAsset.path;
+            
+            // Iterate through image descriptions (keys are filenames)
+            const imageFiles = Object.keys(imageDescriptions);
+            imageFiles.forEach((filename, index) => {
                 const galleryItem = document.createElement('div');
                 galleryItem.className = 'gallery-item';
                 const img = document.createElement('img');
-                img.src = item.path;
-                img.alt = item.alt || item.description || `Property photo ${index + 1}`;
+                
+                // Construct image path
+                const imagePath = `${galleryPath}/${filename}`;
+                img.src = imagePath;
+                
+                // Get alt text from descriptions, default to empty string
+                const description = imageDescriptions[filename];
+                img.alt = (description && description.alt) ? description.alt : '';
+                
                 img.loading = 'lazy';
                 galleryItem.appendChild(img);
                 galleryGrid.appendChild(galleryItem);
