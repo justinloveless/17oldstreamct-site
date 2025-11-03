@@ -16,10 +16,10 @@ async function loadSiteAssets() {
 async function loadContentFiles() {
     if (!siteAssets || !siteAssets.assets) return;
 
-    // Load all content files defined in assets (skip directory assets)
+    // Load all content files defined in assets (skip directory and image assets)
     for (const asset of siteAssets.assets) {
-        // Skip directory assets - they're just metadata for the upload tool
-        if (asset.type === 'directory') continue;
+        // Skip directory and image assets - they're just metadata for the upload tool
+        if (asset.type === 'directory' || asset.type === 'image') continue;
         
         try {
             const response = await fetch(asset.path);
@@ -89,21 +89,29 @@ function populateContent() {
         }
     }
 
-    // Load hero data
-    const heroData = contentData['content/hero.json'];
-    if (heroData) {
+    // Load hero image
+    const heroImageAsset = siteAssets.assets.find(asset => asset.type === 'image' && asset.label === 'Hero Image');
+    if (heroImageAsset) {
         const heroImg = document.getElementById('hero-img');
-        if (heroImg && heroData.image) {
-            heroImg.src = heroData.image;
-            heroImg.alt = heroData.alt || '';
+        if (heroImg) {
+            heroImg.src = heroImageAsset.path;
+        }
+    }
+
+    // Load hero description
+    const heroDescription = contentData['content/hero-description.json'];
+    if (heroDescription) {
+        const heroImg = document.getElementById('hero-img');
+        if (heroImg && heroDescription.alt) {
+            heroImg.alt = heroDescription.alt;
         }
         const heroTitle = document.querySelector('.hero-title');
-        if (heroTitle && heroData.title) {
-            heroTitle.textContent = heroData.title;
+        if (heroTitle && heroDescription.title) {
+            heroTitle.textContent = heroDescription.title;
         }
         const heroSubtitle = document.querySelector('.hero-subtitle');
-        if (heroSubtitle && heroData.subtitle) {
-            heroSubtitle.textContent = heroData.subtitle;
+        if (heroSubtitle && heroDescription.subtitle) {
+            heroSubtitle.textContent = heroDescription.subtitle;
         }
     }
 

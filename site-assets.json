@@ -11,10 +11,18 @@
       "allowedExtensions": [".json"]
     },
     {
-      "path": "content/hero.json",
+      "path": "assets/3c34242da33b88cdd1c94af6c1c807e0-cc_ft_768.webp",
+      "type": "image",
+      "label": "Hero Image",
+      "description": "Main hero/banner image displayed at the top of the page",
+      "maxSize": 2097152,
+      "allowedExtensions": [".jpg", ".jpeg", ".png", ".webp"]
+    },
+    {
+      "path": "content/hero-description.json",
       "type": "text",
-      "label": "Hero Section",
-      "description": "Hero image and text content",
+      "label": "Hero Description",
+      "description": "Hero section title, subtitle, and alt text",
       "maxSize": 2048,
       "allowedExtensions": [".json"]
     },
