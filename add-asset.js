@@ -169,10 +169,26 @@ async function main() {
   const answers = await inquirer.prompt([
     {
       type: 'input',
-      name: 'path',
-      message: 'Asset path (relative to project root):',
-      default: filePath || 'content/new-asset.json',
-      when: !filePath
+      name: 'basePath',
+      message: 'Base path (directory, relative to project root):',
+      default: () => {
+        if (filePath) {
+          const dir = path.dirname(filePath);
+          return dir === '.' ? 'content' : dir;
+        }
+        return 'content';
+      }
+    },
+    {
+      type: 'input',
+      name: 'fileName',
+      message: 'File name (without extension for JSON, with extension for others):',
+      default: () => {
+        if (filePath) {
+          return path.basename(filePath);
+        }
+        return 'new-asset';
+      }
     },
     {
       type: 'confirm',
@@ -186,8 +202,15 @@ async function main() {
       name: 'type',
       message: 'Asset type:',
       choices: ['json', 'text', 'image', 'directory'],
-      default: () => {
-        const targetPath = filePath || answers?.path || '';
+      default: (answers) => {
+        let targetPath;
+        if (filePath) {
+          targetPath = filePath;
+        } else if (answers.basePath && answers.fileName) {
+          targetPath = path.join(answers.basePath, answers.fileName);
+        } else {
+          targetPath = '';
+        }
         return detectFileType(targetPath);
       }
     },
@@ -204,7 +227,14 @@ async function main() {
       name: 'label',
       message: 'Asset label (human-readable name):',
       default: (answers) => {
-        const targetPath = filePath || answers.path;
+        let targetPath;
+        if (filePath) {
+          targetPath = filePath;
+        } else {
+          const base = answers.basePath || 'content';
+          const name = answers.fileName || 'new-asset';
+          targetPath = path.join(base, name);
+        }
         return path.basename(targetPath, path.extname(targetPath))
           .split(/[-_]/)
           .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -303,7 +333,14 @@ async function main() {
       name: 'schema',
       message: 'Edit JSON schema (opens in editor):',
       default: (answers) => {
-        const targetPath = filePath || answers.path;
+        let targetPath;
+        if (filePath) {
+          targetPath = filePath;
+        } else {
+          const base = answers.basePath || 'content';
+          const name = answers.fileName || 'new-asset';
+          targetPath = path.join(base, name);
+        }
         const suggested = suggestSchema(targetPath);
         return JSON.stringify(suggested || {
           type: 'object',
@@ -327,8 +364,16 @@ async function main() {
     }
   ]);
 
-  // Use provided path or answered path
-  const targetPath = filePath || answers.path;
+  // Construct target path from basePath and fileName
+  // Always use the prompted values, not the CLI argument (which is just for defaults)
+  const base = answers.basePath || 'content';
+  const name = answers.fileName || 'new-asset';
+  let targetPath = path.join(base, name).replace(/\\/g, '/');
+
+  // Ensure JSON files have .json extension
+  if (answers.type === 'json' && path.extname(targetPath).toLowerCase() !== '.json') {
+    targetPath = targetPath + '.json';
+  }
 
   // Create file if needed
   if (!fs.existsSync(targetPath)) {
@@ -416,12 +461,20 @@ async function main() {
 
   log('\n✓ Asset added successfully!', 'green');
   log(`\nNext steps:`, 'cyan');
-  log(`1. Edit ${targetPath} with your content`);
-  if (answers.generateHandler) {
-    log(`2. Implement the handler logic in ${handlerPath}`);
+
+  let stepNum = 1;
+  log(`${stepNum++}. Edit ${targetPath} with your content`);
+
+  if (answers.type === 'json') {
+    log(`${stepNum++}. After adding your data, generate a schema with: npm run generate-schema ${targetPath}`);
   }
-  log(`3. Update HTML to include elements for displaying this content`);
-  log(`4. The handler will be automatically loaded by script.js\n`);
+
+  if (answers.generateHandler) {
+    log(`${stepNum++}. Implement the handler logic in ${handlerPath}`);
+  }
+
+  log(`${stepNum++}. Update HTML to include elements for displaying this content`);
+  log(`${stepNum++}. The handler will be automatically loaded by script.js\n`);
 }
 
 // Run

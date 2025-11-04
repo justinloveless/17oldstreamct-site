@@ -3,9 +3,15 @@
   "version": "1.0.0",
   "description": "Static site template with JSON-based content management",
   "scripts": {
-    "add-asset": "node add-asset.js"
+    "add-asset": "node add-asset.js",
+    "generate-schema": "node generate-schema.js"
   },
-  "keywords": ["template", "static-site", "json", "content-management"],
+  "keywords": [
+    "template",
+    "static-site",
+    "json",
+    "content-management"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {

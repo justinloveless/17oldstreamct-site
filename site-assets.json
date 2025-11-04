@@ -154,6 +154,17 @@
           }
         ]
       }
+    },
+    {
+      "path": "content/facts.json",
+      "type": "json",
+      "label": "Facts",
+      "description": "",
+      "handler": "handlers/facts.js",
+      "maxSize": 5120,
+      "allowedExtensions": [
+        ".json"
+      ]
     }
   ]
 }

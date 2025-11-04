@@ -1,0 +1,98 @@
+{
+  "interior": [
+    {
+      "label": "Bedrooms",
+      "value": 3
+    },
+    {
+      "label": "Bathrooms",
+      "value": 2
+    },
+    {
+      "label": "Heating",
+      "value": "Other"
+    },
+    {
+      "label": "Cooling",
+      "value": "Central"
+    },
+    {
+      "label": "Appliances",
+      "value": "Dishwasher, Garbage disposal, Microwave, Range / Oven"
+    },
+    {
+      "label": "Flooring",
+      "value": "Tile, Laminate"
+    },
+    {
+      "label": "Fireplace",
+      "value": "Yes"
+    },
+    {
+      "label": "Total Interior Livable Area",
+      "value": "1,456 sq. ft."
+    }
+  ],
+  "property": [
+    {
+      "label": "Total Parking Spaces",
+      "value": 2
+    },
+    {
+      "label": "Parking Features",
+      "value": "Garage - Attached"
+    },
+    {
+      "label": "Exterior Features",
+      "value": "Brick, Composition"
+    },
+    {
+      "label": "Lot Size",
+      "value": "10,794 sq. ft."
+    },
+    {
+      "label": "Parcel Number",
+      "value": 97261207300
+    }
+  ],
+  "construction": [
+    {
+      "label": "Home Type",
+      "value": "Single Family"
+    },
+    {
+      "label": "Materials",
+      "value": "Frame"
+    },
+    {
+      "label": "Foundation",
+      "value": "Slab"
+    },
+    {
+      "label": "Roof",
+      "value": "Asphalt"
+    },
+    {
+      "label": "New Construction",
+      "value": "No"
+    },
+    {
+      "label": "Year Built",
+      "value": 1980
+    }
+  ],
+  "financial": [
+    {
+      "label": "Price / Sqft",
+      "value": "$260"
+    },
+    {
+      "label": "Tax Assessed Value",
+      "value": "$271,539"
+    },
+    {
+      "label": "Date Listed",
+      "value": "2025-11-01"
+    }
+  ]
+}
