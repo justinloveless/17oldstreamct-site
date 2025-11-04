@@ -75,22 +75,31 @@ npm run add-asset content/about.md
 The tool will:
 1. Create `content/about.md` with starter content
 2. Add entry to `site-assets.json`
-3. Generate handler code like:
+3. Generate handler file `handlers/about.js`:
 
 ```javascript
-// Load About
-const aboutData = contentData['content/about.md'];
-if (aboutData) {
+/**
+ * Handler for content/about.md
+ * About page content
+ */
+export function handle(data) {
+  if (!data) return;
+
   // TODO: Add logic to display About
-  // Example: document.querySelector('.about').innerHTML = aboutData;
+  // Example:
+  // const container = document.querySelector('.about');
+  // if (container) {
+  //   container.innerHTML = data; // Or parse markdown first
+  // }
 }
 ```
 
 ### After Adding an Asset
 
 1. **Edit the content file** with your actual data
-2. **Add handler code** to `script.js` in the `populateContent()` function
+2. **Implement the handler** in `handlers/your-asset.js`
 3. **Update HTML** to include elements that will display the content
+4. The handler will be **automatically loaded** by `script.js`
 
 Example HTML addition:
 ```html

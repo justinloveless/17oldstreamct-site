@@ -34,17 +34,26 @@ Static website template with JSON-based content management system.
 
 ## What Makes This Template Reusable?
 
-This template separates **content** from **code**:
+This template uses a **modular handler architecture**:
 - All editable content lives in JSON/Markdown files
-- `site-assets.json` defines what content exists
-- `script.js` loads content dynamically based on the config
-- Update content without touching code
+- `site-assets.json` defines what content exists and which handler to use
+- Each asset has its own handler file (`handlers/*.js`) 
+- `script.js` automatically loads and executes all handlers
+- Add new content without modifying the main script
+
+### Key Architecture Benefits
+- ✓ **Modular**: One handler file per asset - easy to find and edit
+- ✓ **Scalable**: Add unlimited assets without touching core code
+- ✓ **Maintainable**: Clean separation of concerns
+- ✓ **Auto-loading**: New handlers are automatically discovered and executed
 
 Perfect for:
 - Property listings, portfolios, product pages
 - Marketing landing pages
 - Documentation sites
 - Any site where content changes frequently
+
+📖 See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed architecture documentation.
 
 ## Example Site Structure
 
@@ -67,12 +76,30 @@ npm run add-asset content/new-section.json
 
 The tool will:
 1. ✓ Add entry to `site-assets.json` with validation rules
-2. ✓ Generate handler code for `script.js`
-3. ✓ Create starter file if it doesn't exist
+2. ✓ Create a dedicated handler file in `handlers/` directory
+3. ✓ Create starter content file if it doesn't exist
+
+### How Handlers Work
+
+Each asset gets its own handler file that defines how to display that content:
+- **Handler file**: `handlers/your-asset.js` - Contains the logic to manipulate the DOM
+- **Export function**: `export function handle(data)` - Receives loaded content
+- **Auto-loaded**: `script.js` automatically imports and calls each handler
+
+Example handler:
+```javascript
+export function handle(data) {
+  if (!data) return;
+  const element = document.querySelector('.my-section');
+  if (element) {
+    element.textContent = data.title;
+  }
+}
+```
 
 ### Manual Asset Addition
 
-Alternatively, edit `site-assets.json` directly and add corresponding loader code to `script.js`.
+Alternatively, edit `site-assets.json` directly and create a handler file manually.
 
 ## Content Structure
 
@@ -90,6 +117,16 @@ The included example is a property listing site with:
 - `content/summary.md` - Markdown content
 - `content/image-descriptions.json` - Gallery metadata
 - `assets/` - Images and media files
+
+### Handler Files
+Each content asset has a corresponding handler:
+- `handlers/property.js` - Displays property information
+- `handlers/hero-description.js` - Populates hero section
+- `handlers/summary.js` - Parses and displays markdown
+- `handlers/gallery.js` - Builds image gallery
+- `handlers/hero-image.js` - Sets hero image
+
+See `handlers/README.md` for detailed documentation.
 
 For your own site, create whatever content files make sense for your use case.
 
@@ -110,7 +147,9 @@ Add `CNAME` file with your domain name.
 Edit `styles.css` to customize appearance.
 
 ### Content Loading
-Modify `script.js` to add new content handlers. Follow pattern in `populateContent()` function.
+- Add new assets with `npm run add-asset`
+- Implement handler logic in generated `handlers/*.js` files
+- Handlers are automatically loaded and executed by `script.js`
 
 ### HTML Structure
 Edit `index.html` to change layout or add sections.
@@ -133,6 +172,13 @@ Example schema:
   }
 }
 ```
+
+## Documentation
+
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Detailed architecture overview and patterns
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Setup guide and examples
+- **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - Command cheat sheet
+- **[handlers/README.md](handlers/README.md)** - Handler documentation
 
 ## License
 

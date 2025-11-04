@@ -7,7 +7,7 @@ async function loadSiteAssets() {
         const response = await fetch('site-assets.json');
         siteAssets = await response.json();
         await loadContentFiles();
-        populateContent();
+        await loadHandlers();
     } catch (error) {
         console.error('Error loading site assets:', error);
     }
@@ -16,10 +16,19 @@ async function loadSiteAssets() {
 async function loadContentFiles() {
     if (!siteAssets || !siteAssets.assets) return;
 
-    // Load all content files defined in assets (skip directory and image assets)
+    // Load all content files defined in assets
     for (const asset of siteAssets.assets) {
-        // Skip directory and image assets - they're just metadata for the upload tool
-        if (asset.type === 'directory' || asset.type === 'image') continue;
+        // Skip directory assets for now (they'll be handled by their handlers)
+        if (asset.type === 'directory') {
+            contentData[asset.path] = asset.path; // Store the path for handlers
+            continue;
+        }
+        
+        // For images, just store the path
+        if (asset.type === 'image') {
+            contentData[asset.path] = asset.path;
+            continue;
+        }
         
         try {
             const response = await fetch(asset.path);
@@ -37,198 +46,41 @@ async function loadContentFiles() {
     }
 }
 
-function populateContent() {
-    // Load property data
-    const propertyData = contentData['content/property.json'];
-    if (propertyData) {
-        const addressEl = document.querySelector('.address');
-        if (addressEl && propertyData.address) {
-            addressEl.textContent = propertyData.address;
-        }
-        const locationEl = document.querySelector('.location');
-        if (locationEl && propertyData.location) {
-            locationEl.textContent = propertyData.location;
-        }
-        const priceEl = document.querySelector('.price');
-        if (priceEl && propertyData.price) {
-            priceEl.textContent = propertyData.price;
-        }
-        const zillowLinks = document.querySelectorAll('.zillow-link, .contact-zillow');
-        zillowLinks.forEach(link => {
-            if (propertyData.zillowUrl) {
-                link.href = propertyData.zillowUrl;
-            }
-        });
+async function loadHandlers() {
+    if (!siteAssets || !siteAssets.assets) return;
 
-        // Populate property details
-        if (propertyData.details) {
-            const details = propertyData.details;
-            const detailItems = document.querySelectorAll('.detail-item');
-            detailItems.forEach(item => {
-                const label = item.querySelector('.detail-label');
-                if (label) {
-                    const labelText = label.textContent.trim();
-                    const value = item.querySelector('.detail-value');
-                    if (value) {
-                        if (labelText.includes('Bedrooms')) {
-                            value.textContent = details.bedrooms || '';
-                        } else if (labelText.includes('Bathrooms')) {
-                            value.textContent = details.bathrooms || '';
-                        } else if (labelText.includes('Square Feet')) {
-                            value.textContent = details.squareFeet || '';
-                        } else if (labelText.includes('Lot Size')) {
-                            value.textContent = details.lotSize || '';
-                        } else if (labelText.includes('Year Built')) {
-                            value.textContent = details.yearBuilt || '';
-                        } else if (labelText.includes('Price/sqft')) {
-                            value.textContent = details.pricePerSqft || '';
-                        }
-                    }
-                }
-            });
-        }
-    }
+    // Load and execute each handler
+    for (const asset of siteAssets.assets) {
+        if (!asset.handler) continue;
 
-    // Load hero image
-    const heroImageAsset = siteAssets.assets.find(asset => asset.type === 'image' && asset.label === 'Hero Image');
-    if (heroImageAsset) {
-        const heroImg = document.getElementById('hero-img');
-        if (heroImg) {
-            heroImg.src = heroImageAsset.path;
-        }
-    }
-
-    // Load hero description
-    const heroDescription = contentData['content/hero-description.json'];
-    if (heroDescription) {
-        const heroImg = document.getElementById('hero-img');
-        if (heroImg && heroDescription.alt) {
-            heroImg.alt = heroDescription.alt;
-        }
-        const heroTitle = document.querySelector('.hero-title');
-        if (heroTitle && heroDescription.title) {
-            heroTitle.textContent = heroDescription.title;
-        }
-        const heroSubtitle = document.querySelector('.hero-subtitle');
-        if (heroSubtitle && heroDescription.subtitle) {
-            heroSubtitle.textContent = heroDescription.subtitle;
-        }
-    }
-
-    // Load gallery images from directory using image-descriptions.json
-    const imageDescriptions = contentData['content/image-descriptions.json'];
-    const galleryDirectoryAsset = siteAssets.assets.find(asset => asset.type === 'directory' && asset.label === 'Photo Gallery');
-    
-    if (imageDescriptions && galleryDirectoryAsset) {
-        const galleryGrid = document.getElementById('gallery-grid');
-        if (galleryGrid) {
-            galleryGrid.innerHTML = '';
-            const galleryPath = galleryDirectoryAsset.path;
+        try {
+            // Dynamically import the handler module
+            const handlerModule = await import(`./${asset.handler}`);
             
-            // Iterate through image descriptions (keys are filenames)
-            const imageFiles = Object.keys(imageDescriptions);
-            imageFiles.forEach((filename, index) => {
-                const galleryItem = document.createElement('div');
-                galleryItem.className = 'gallery-item';
-                const img = document.createElement('img');
-                
-                // Construct image path
-                const imagePath = `${galleryPath}/${filename}`;
-                img.src = imagePath;
-                
-                // Get alt text from descriptions, default to empty string
-                const description = imageDescriptions[filename];
-                img.alt = (description && description.alt) ? description.alt : '';
-                
-                img.loading = 'lazy';
-                galleryItem.appendChild(img);
-                galleryGrid.appendChild(galleryItem);
-            });
-        }
-    }
-
-    // Load summary markdown
-    const summaryMarkdown = contentData['content/summary.md'];
-    if (summaryMarkdown) {
-        parseAndPopulateSummary(summaryMarkdown);
-    }
-
-    // Initialize lightbox after gallery is populated
-    initializeLightbox();
-}
-
-function parseAndPopulateSummary(markdown) {
-    const lines = markdown.split('\n');
-    const summarySection = document.querySelector('.summary');
-    if (!summarySection) return;
-
-    const container = summarySection.querySelector('.container');
-    if (!container) return;
-
-    // Clear existing content except the container
-    container.innerHTML = '';
-
-    let currentElement = null;
-    let highlightsContainer = null;
-
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-
-        if (!line) continue;
-
-        // Parse heading levels
-        if (line.startsWith('# ')) {
-            const h2 = document.createElement('h2');
-            h2.textContent = line.substring(2);
-            container.appendChild(h2);
-            currentElement = null;
-        } else if (line.startsWith('## ')) {
-            const h3 = document.createElement('h3');
-            h3.textContent = line.substring(3);
-            container.appendChild(h3);
-            currentElement = null;
-        } else if (line.startsWith('### ')) {
-            // This is a highlight title
-            if (!highlightsContainer) {
-                highlightsContainer = document.createElement('div');
-                highlightsContainer.className = 'highlights-grid';
-                container.appendChild(highlightsContainer);
-            }
-            const highlightItem = document.createElement('div');
-            highlightItem.className = 'highlight-item';
-            const h4 = document.createElement('h4');
-            h4.textContent = line.substring(4);
-            highlightItem.appendChild(h4);
-            highlightsContainer.appendChild(highlightItem);
-            currentElement = highlightItem;
-        } else if (line === '---') {
-            // Horizontal rule - start footer section
-            currentElement = null;
-        } else if (line.match(/^[????]/)) {
-            // Emoji line - summary note
-            const note = document.createElement('p');
-            note.className = 'summary-note';
-            note.innerHTML = line.replace(/\n/g, '<br>');
-            container.appendChild(note);
-            currentElement = null;
-        } else if (line) {
-            // Regular paragraph
-            if (currentElement && currentElement.classList.contains('highlight-item')) {
-                // This is highlight description
-                const p = document.createElement('p');
-                p.textContent = line;
-                currentElement.appendChild(p);
-            } else {
-                // Regular paragraph or footer
-                const p = document.createElement('p');
-                if (i > 0 && lines[i - 1].trim() === '---') {
-                    p.className = 'summary-footer';
+            if (typeof handlerModule.handle === 'function') {
+                // Special handling for gallery (needs both image descriptions and directory path)
+                if (asset.label === 'Photo Gallery') {
+                    // Find the image-descriptions asset
+                    const imageDescAsset = siteAssets.assets.find(a => 
+                        a.path === 'content/image-descriptions.json'
+                    );
+                    const imageDescriptions = imageDescAsset ? contentData[imageDescAsset.path] : null;
+                    handlerModule.handle(imageDescriptions, asset.path);
+                } else {
+                    // Call handler with the loaded content
+                    const data = contentData[asset.path];
+                    handlerModule.handle(data, asset.path);
                 }
-                p.textContent = line;
-                container.appendChild(p);
+            } else {
+                console.warn(`Handler ${asset.handler} does not export a handle function`);
             }
+        } catch (error) {
+            console.error(`Failed to load handler ${asset.handler}:`, error);
         }
     }
+
+    // Initialize lightbox after all handlers have run
+    initializeLightbox();
 }
 
 // Image gallery lightbox functionality

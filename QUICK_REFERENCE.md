@@ -40,8 +40,18 @@ When prompted:
 
 Then:
 1. Edit `content/team.json` with actual data
-2. Add generated handler code to `script.js`
+2. Implement handler in `handlers/team.js`:
+   ```javascript
+   export function handle(data) {
+     if (!data || !data.members) return;
+     const container = document.querySelector('.team-grid');
+     data.members.forEach(member => {
+       // Create and append DOM elements
+     });
+   }
+   ```
 3. Add HTML section to display the content
+4. Handler is automatically loaded by `script.js`
 
 ### Adding a New Text Section
 
@@ -51,14 +61,16 @@ Then:
 npm run add-asset content/about.md
 ```
 
-Creates file and adds to `site-assets.json`. Then:
+Creates file, adds to `site-assets.json`, and generates `handlers/about.js`. Then:
 1. Edit `content/about.md` with markdown content
-2. Add handler in `script.js`:
+2. Implement handler in `handlers/about.js`:
    ```javascript
-   const aboutData = contentData['content/about.md'];
-   if (aboutData) {
-     const section = document.querySelector('.about .container');
-     section.innerHTML = parseMarkdown(aboutData); // Use your MD parser
+   export function handle(data) {
+     if (!data) return;
+     const section = document.querySelector('.about');
+     if (section) {
+       section.innerHTML = data; // Or parse markdown first
+     }
    }
    ```
 3. Add HTML section with class `about`
@@ -79,6 +91,13 @@ Creates file and adds to `site-assets.json`. Then:
 │   ├── summary.md                # Example: Main content
 │   └── image-descriptions.json   # Example: Gallery metadata
 │
+├── handlers/                     # Asset handlers (auto-loaded)
+│   ├── property.js               # Handler for property.json
+│   ├── hero-description.js       # Handler for hero-description.json
+│   ├── hero-image.js             # Handler for hero image
+│   ├── summary.js                # Handler for summary.md
+│   └── gallery.js                # Handler for gallery
+│
 └── assets/                       # Images and media
     └── *.webp                    # Example: Images
 ```
@@ -96,13 +115,16 @@ Central registry of all manageable content:
 1. `script.js` loads on page load
 2. Fetches `site-assets.json`
 3. Loads all content files listed in assets
-4. Calls `populateContent()` to inject into DOM
+4. Dynamically imports each handler module
+5. Calls each `handler.handle(data)` function
 
 ### Adding Custom Content
 Every new content file needs:
 1. Entry in `site-assets.json` (use `npm run add-asset`)
-2. Loader code in `script.js`
+2. Handler file in `handlers/` directory
 3. HTML elements to display the content
+
+**The handler is automatically loaded** - no need to modify `script.js`!
 
 ## Deployment Checklist
 
@@ -147,18 +169,39 @@ Edit CSS variables in `styles.css`:
 ### Add New Data Fields
 1. Add fields to your JSON content file
 2. Update schema in `site-assets.json` (if using validation)
-3. Add display code in `script.js`
+3. Update handler in `handlers/your-asset.js` to display new fields
 4. Add HTML elements in `index.html`
 
 ### Custom Sections
 Follow pattern:
-1. Content file (JSON/MD) → `content/`
-2. Asset entry → `site-assets.json`
-3. Loader → `script.js`
-4. Display → `index.html`
+1. Run `npm run add-asset content/your-section.json`
+2. Edit content file with your data
+3. Implement handler logic in `handlers/your-section.js`
+4. Add HTML structure in `index.html`
+5. Handler is auto-loaded - done!
+
+## Handler Pattern
+
+### What are Handlers?
+Each asset has a dedicated JavaScript file that defines how to display its content. This keeps code modular and maintainable.
+
+### Handler Structure
+```javascript
+// handlers/my-asset.js
+export function handle(data) {
+  if (!data) return;
+  // Your DOM manipulation logic here
+}
+```
+
+### Handler Benefits
+- ✓ One file per asset - easy to find and edit
+- ✓ Automatically loaded by `script.js`
+- ✓ No need to modify main script when adding assets
+- ✓ Clean separation of concerns
 
 ## Support
 
 - See `README.md` for full documentation
 - See `CONTRIBUTING.md` for detailed examples
-- Check inline comments in `script.js` for patterns
+- Check `handlers/*.js` for implementation examples

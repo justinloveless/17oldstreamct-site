@@ -7,6 +7,7 @@
       "type": "json",
       "label": "Property Information",
       "description": "Property address, location, price, and details",
+      "handler": "handlers/property.js",
       "maxSize": 5120,
       "allowedExtensions": [".json"],
       "schema": {
@@ -67,6 +68,7 @@
       "type": "image",
       "label": "Hero Image",
       "description": "Main hero/banner image displayed at the top of the page",
+      "handler": "handlers/hero-image.js",
       "maxSize": 2097152,
       "allowedExtensions": [".jpg", ".jpeg", ".png", ".webp"]
     },
@@ -75,6 +77,7 @@
       "type": "json",
       "label": "Hero Description",
       "description": "Hero section title, subtitle, and alt text",
+      "handler": "handlers/hero-description.js",
       "maxSize": 2048,
       "allowedExtensions": [".json"],
       "schema": {
@@ -101,6 +104,7 @@
       "type": "text",
       "label": "Summary Content",
       "description": "Markdown content for the property summary section",
+      "handler": "handlers/summary.js",
       "maxSize": 51200,
       "allowedExtensions": [".md"]
     },
@@ -109,6 +113,7 @@
       "type": "directory",
       "label": "Photo Gallery",
       "description": "Directory containing gallery images. All images listed in image-descriptions.json will be displayed in the gallery.",
+      "handler": "handlers/gallery.js",
       "maxSize": 209715200,
       "allowedExtensions": [".jpg", ".jpeg", ".png", ".webp"]
     },

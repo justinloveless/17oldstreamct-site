@@ -61,26 +61,59 @@ function suggestSchema(filePath) {
   };
 }
 
-// Generate handler code for script.js
-function generateHandlerCode(asset) {
-  const { path: assetPath, type, label } = asset;
+// Generate handler file content
+function generateHandlerFile(asset) {
+  const { type, label } = asset;
   const varName = label.replace(/[^a-zA-Z0-9]/g, '').replace(/^[A-Z]/, c => c.toLowerCase());
   
-  let code = `\n  // Load ${label}\n`;
-  code += `  const ${varName}Data = contentData['${assetPath}'];\n`;
-  code += `  if (${varName}Data) {\n`;
+  let code = `/**\n * Handler for ${asset.path}\n * ${asset.description}\n */\n`;
+  code += `export function handle(data) {\n`;
+  code += `  if (!data) return;\n\n`;
   
   if (type === 'json') {
-    code += `    // TODO: Add DOM manipulation to populate ${label} data\n`;
-    code += `    // Example: document.querySelector('.${varName}').textContent = ${varName}Data.propertyName;\n`;
+    code += `  // TODO: Add DOM manipulation to populate ${label} data\n`;
+    code += `  // Example:\n`;
+    code += `  // const element = document.querySelector('.${varName}');\n`;
+    code += `  // if (element && data.title) {\n`;
+    code += `  //   element.textContent = data.title;\n`;
+    code += `  // }\n`;
   } else if (type === 'text') {
-    code += `    // TODO: Add logic to display ${label}\n`;
-    code += `    // Example: document.querySelector('.${varName}').innerHTML = ${varName}Data;\n`;
+    code += `  // TODO: Add logic to display ${label}\n`;
+    code += `  // Example:\n`;
+    code += `  // const container = document.querySelector('.${varName}');\n`;
+    code += `  // if (container) {\n`;
+    code += `  //   container.innerHTML = data; // Or parse markdown first\n`;
+    code += `  // }\n`;
+  } else if (type === 'image') {
+    code += `  // For image assets, data will be null and assetPath contains the image path\n`;
+    code += `  // TODO: Set image source\n`;
+    code += `  // Example:\n`;
+    code += `  // const img = document.querySelector('.${varName}');\n`;
+    code += `  // if (img) {\n`;
+    code += `  //   img.src = data; // data will be the asset path for images\n`;
+    code += `  // }\n`;
+  } else if (type === 'directory') {
+    code += `  // For directory assets, implement custom logic\n`;
+    code += `  // TODO: Add your directory handling logic\n`;
   }
   
-  code += `  }\n`;
+  code += `}\n`;
   
   return code;
+}
+
+// Create handler file
+function createHandlerFile(handlerPath, content) {
+  const dir = path.dirname(handlerPath);
+  
+  // Create directory if it doesn't exist
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+    log(`✓ Created directory: ${dir}`, 'green');
+  }
+  
+  fs.writeFileSync(handlerPath, content);
+  log(`✓ Created handler: ${handlerPath}`, 'green');
 }
 
 // Create empty file with starter content
@@ -218,9 +251,8 @@ async function main() {
     {
       type: 'confirm',
       name: 'generateHandler',
-      message: 'Generate handler code for script.js?',
-      default: true,
-      when: (answers) => answers.type !== 'directory' && answers.type !== 'image'
+      message: 'Generate handler file?',
+      default: true
     }
   ]);
   
@@ -234,12 +266,17 @@ async function main() {
     }
   }
   
+  // Generate handler path
+  const handlerFileName = path.basename(targetPath, path.extname(targetPath)) + '.js';
+  const handlerPath = `handlers/${handlerFileName}`;
+  
   // Build asset object
   const asset = {
     path: targetPath,
     type: answers.type,
     label: answers.label,
     description: answers.description,
+    handler: handlerPath,
     maxSize: answers.maxSize,
     allowedExtensions: answers.allowedExtensions
   };
@@ -262,19 +299,20 @@ async function main() {
   
   saveSiteAssets(siteAssets);
   
-  // Generate handler code
+  // Generate handler file
   if (answers.generateHandler) {
-    const handlerCode = generateHandlerCode(asset);
-    log('\n=== Generated Handler Code ===', 'cyan');
-    log('Add this to the populateContent() function in script.js:\n', 'yellow');
-    log(handlerCode, 'bright');
+    const handlerContent = generateHandlerFile(asset);
+    createHandlerFile(handlerPath, handlerContent);
   }
   
   log('\n✓ Asset added successfully!', 'green');
   log(`\nNext steps:`, 'cyan');
   log(`1. Edit ${targetPath} with your content`);
-  log(`2. Add handler code to script.js (if not already done)`);
-  log(`3. Update HTML to include elements for displaying this content\n`);
+  if (answers.generateHandler) {
+    log(`2. Implement the handler logic in ${handlerPath}`);
+  }
+  log(`3. Update HTML to include elements for displaying this content`);
+  log(`4. The handler will be automatically loaded by script.js\n`);
 }
 
 // Run
