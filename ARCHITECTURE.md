@@ -96,6 +96,87 @@ npm run add-asset → Edit content → Edit handler → Add HTML
                   ↑ (Auto-generated)   ↑ (Isolated module)
 ```
 
+## Asset Types
+
+### Basic Asset Types
+
+- **json**: JSON data files
+- **text**: Plain text or Markdown files
+- **image**: Image files (jpg, png, webp, etc.)
+- **directory**: Container for multiple files
+
+### Combo Assets
+
+Combo assets allow multiple files with the same base name but different extensions to form a single logical asset. This is useful when you need to combine data across file types (e.g., an image + its metadata).
+
+**Example Structure:**
+```
+assets/
+  ├── photo1.webp       (image file)
+  ├── photo1.json       (metadata file)
+  ├── photo2.jpg        (image file)
+  └── photo2.json       (metadata file)
+```
+
+Each pair (photo1.webp + photo1.json) forms one combo asset.
+
+**In site-assets.json:**
+```json
+{
+  "type": "directory",
+  "path": "assets/gallery",
+  "contains": {
+    "type": "combo",
+    "parts": [
+      { 
+        "assetType": "image", 
+        "allowedExtensions": [".webp", ".jpg", ".png"],
+        "maxSize": 2097152
+      },
+      { 
+        "assetType": "json", 
+        "allowedExtensions": [".json"],
+        "maxSize": 5120
+      }
+    ]
+  },
+  "label": "Gallery Photos",
+  "handler": "handlers/gallery.js"
+}
+```
+
+**Handler receives grouped data:**
+```javascript
+{
+  'photo1': {
+    '.webp': 'assets/gallery/photo1.webp',
+    '.json': { alt: 'Description', ... }
+  },
+  'photo2': {
+    '.jpg': 'assets/gallery/photo2.jpg',
+    '.json': { alt: 'Description', ... }
+  }
+}
+```
+
+### Simple Directory Assets
+
+Directories can also contain single asset types:
+
+```json
+{
+  "type": "directory",
+  "path": "assets/photos",
+  "contains": {
+    "type": "image",
+    "allowedExtensions": [".webp", ".jpg"],
+    "maxSize": 2097152
+  },
+  "label": "Photos",
+  "handler": "handlers/photos.js"
+}
+```
+
 ## File Organization
 
 ```
@@ -110,6 +191,12 @@ project/
 │   └── content/
 │       ├── *.json         - Data files
 │       └── *.md           - Text content
+│
+├── Assets (Images and combo assets)
+│   └── assets/
+│       ├── photo1.webp    - Image file
+│       ├── photo1.json    - Metadata for photo1
+│       └── ...
 │
 └── Handlers (Add new, rarely modify existing)
     └── handlers/

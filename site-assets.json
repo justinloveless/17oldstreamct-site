@@ -9,10 +9,16 @@
       "description": "Property address, location, price, and details",
       "handler": "handlers/property.js",
       "maxSize": 5120,
-      "allowedExtensions": [".json"],
+      "allowedExtensions": [
+        ".json"
+      ],
       "schema": {
         "type": "object",
-        "required": ["address", "location", "price"],
+        "required": [
+          "address",
+          "location",
+          "price"
+        ],
         "properties": {
           "address": {
             "type": "string",
@@ -64,13 +70,18 @@
       }
     },
     {
-      "path": "assets/3c34242da33b88cdd1c94af6c1c807e0-cc_ft_768.webp",
+      "path": "gallery/3c34242da33b88cdd1c94af6c1c807e0-cc_ft_768.webp",
       "type": "image",
       "label": "Hero Image",
       "description": "Main hero/banner image displayed at the top of the page",
       "handler": "handlers/hero-image.js",
       "maxSize": 2097152,
-      "allowedExtensions": [".jpg", ".jpeg", ".png", ".webp"]
+      "allowedExtensions": [
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".webp"
+      ]
     },
     {
       "path": "content/hero-description.json",
@@ -79,10 +90,15 @@
       "description": "Hero section title, subtitle, and alt text",
       "handler": "handlers/hero-description.js",
       "maxSize": 2048,
-      "allowedExtensions": [".json"],
+      "allowedExtensions": [
+        ".json"
+      ],
       "schema": {
         "type": "object",
-        "required": ["title", "subtitle"],
+        "required": [
+          "title",
+          "subtitle"
+        ],
         "properties": {
           "alt": {
             "type": "string",
@@ -106,40 +122,37 @@
       "description": "Markdown content for the property summary section",
       "handler": "handlers/summary.js",
       "maxSize": 51200,
-      "allowedExtensions": [".md"]
+      "allowedExtensions": [
+        ".md"
+      ]
     },
     {
-      "path": "assets",
+      "path": "gallery",
       "type": "directory",
       "label": "Photo Gallery",
-      "description": "Directory containing gallery images. All images listed in image-descriptions.json will be displayed in the gallery.",
+      "description": "Directory containing gallery images as combo assets. Each image can have a matching .json file with metadata.",
       "handler": "handlers/gallery.js",
-      "maxSize": 209715200,
-      "allowedExtensions": [".jpg", ".jpeg", ".png", ".webp"]
-    },
-    {
-      "path": "content/image-descriptions.json",
-      "type": "json",
-      "label": "Image Descriptions",
-      "description": "Optional JSON file mapping image filenames to alt text and descriptions",
-      "maxSize": 51200,
-      "allowedExtensions": [".json"],
-      "schema": {
-        "type": "object",
-        "description": "Object where keys are image filenames and values are description objects",
-        "additionalProperties": {
-          "type": "object",
-          "properties": {
-            "alt": {
-              "type": "string",
-              "description": "Alt text for the image (optional, defaults to empty string)"
-            },
-            "description": {
-              "type": "string",
-              "description": "Description of the image (optional)"
-            }
+      "contains": {
+        "type": "combo",
+        "parts": [
+          {
+            "assetType": "image",
+            "allowedExtensions": [
+              ".jpg",
+              ".jpeg",
+              ".png",
+              ".webp"
+            ],
+            "maxSize": 2097152
+          },
+          {
+            "assetType": "json",
+            "allowedExtensions": [
+              ".json"
+            ],
+            "maxSize": 5120
           }
-        }
+        ]
       }
     }
   ]

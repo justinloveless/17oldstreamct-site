@@ -65,11 +65,11 @@ function suggestSchema(filePath) {
 function generateHandlerFile(asset) {
   const { type, label } = asset;
   const varName = label.replace(/[^a-zA-Z0-9]/g, '').replace(/^[A-Z]/, c => c.toLowerCase());
-  
+
   let code = `/**\n * Handler for ${asset.path}\n * ${asset.description}\n */\n`;
   code += `export function handle(data) {\n`;
   code += `  if (!data) return;\n\n`;
-  
+
   if (type === 'json') {
     code += `  // TODO: Add DOM manipulation to populate ${label} data\n`;
     code += `  // Example:\n`;
@@ -93,25 +93,37 @@ function generateHandlerFile(asset) {
     code += `  //   img.src = data; // data will be the asset path for images\n`;
     code += `  // }\n`;
   } else if (type === 'directory') {
-    code += `  // For directory assets, implement custom logic\n`;
-    code += `  // TODO: Add your directory handling logic\n`;
+    if (asset.contains && asset.contains.type === 'combo') {
+      code += `  // Directory contains combo assets\n`;
+      code += `  // data is an object with base names as keys\n`;
+      code += `  // Each combo contains files with different extensions\n`;
+      code += `  // Example structure: { 'item1': { '.ext1': ..., '.ext2': ... } }\n\n`;
+      code += `  // TODO: Iterate through combo assets and render them\n`;
+      code += `  // Object.keys(data).forEach(baseName => {\n`;
+      code += `  //   const combo = data[baseName];\n`;
+      code += `  //   // Access different parts: combo['.ext1'], combo['.ext2'], etc.\n`;
+      code += `  // });\n`;
+    } else {
+      code += `  // For directory assets, implement custom logic\n`;
+      code += `  // TODO: Add your directory handling logic\n`;
+    }
   }
-  
+
   code += `}\n`;
-  
+
   return code;
 }
 
 // Create handler file
 function createHandlerFile(handlerPath, content) {
   const dir = path.dirname(handlerPath);
-  
+
   // Create directory if it doesn't exist
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
     log(`✓ Created directory: ${dir}`, 'green');
   }
-  
+
   fs.writeFileSync(handlerPath, content);
   log(`✓ Created handler: ${handlerPath}`, 'green');
 }
@@ -119,21 +131,21 @@ function createHandlerFile(handlerPath, content) {
 // Create empty file with starter content
 function createStarterFile(filePath, type) {
   const dir = path.dirname(filePath);
-  
+
   // Create directory if it doesn't exist
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
     log(`✓ Created directory: ${dir}`, 'green');
   }
-  
+
   let content = '';
-  
+
   if (type === 'json') {
     content = '{\n  "example": "value"\n}\n';
   } else if (type === 'text') {
     content = '# New Content\n\nAdd your content here.\n';
   }
-  
+
   fs.writeFileSync(filePath, content);
   log(`✓ Created file: ${filePath}`, 'green');
 }
@@ -141,18 +153,18 @@ function createStarterFile(filePath, type) {
 // Main function
 async function main() {
   log('\n=== Add New Asset to Site ===\n', 'bright');
-  
+
   // Get file path from command line or prompt
   let filePath = process.argv[2];
   let fileExists = false;
-  
+
   if (filePath) {
     fileExists = fs.existsSync(filePath);
     if (!fileExists) {
       log(`File "${filePath}" does not exist.`, 'yellow');
     }
   }
-  
+
   // Prompt for asset details
   const answers = await inquirer.prompt([
     {
@@ -178,6 +190,14 @@ async function main() {
         const targetPath = filePath || answers?.path || '';
         return detectFileType(targetPath);
       }
+    },
+    {
+      type: 'list',
+      name: 'directoryContains',
+      message: 'What does this directory contain?',
+      choices: ['combo', 'image', 'json', 'text'],
+      default: 'combo',
+      when: (answers) => answers.type === 'directory'
     },
     {
       type: 'input',
@@ -216,9 +236,60 @@ async function main() {
         if (answers.type === 'image') return '.jpg,.jpeg,.png,.webp';
         if (answers.type === 'json') return '.json';
         if (answers.type === 'text') return '.md,.txt';
+        if (answers.type === 'directory' && answers.directoryContains === 'image') return '.jpg,.jpeg,.png,.webp';
+        if (answers.type === 'directory' && answers.directoryContains === 'json') return '.json';
+        if (answers.type === 'directory' && answers.directoryContains === 'text') return '.md,.txt';
         return '';
       },
-      filter: (input) => input.split(',').map(ext => ext.trim())
+      filter: (input) => input.split(',').map(ext => ext.trim()),
+      when: (answers) => answers.type !== 'directory' || answers.directoryContains !== 'combo'
+    },
+    {
+      type: 'input',
+      name: 'comboParts',
+      message: 'Combo parts (format: assetType:extensions,assetType:extensions e.g. "image:.webp,.jpg;json:.json"):',
+      default: 'image:.webp,.jpg,.png;json:.json',
+      when: (answers) => answers.type === 'directory' && answers.directoryContains === 'combo',
+      filter: (input) => {
+        // Parse the combo parts string into structured data
+        const parts = [];
+        const partStrings = input.split(';');
+        partStrings.forEach(partStr => {
+          const [assetType, extsStr] = partStr.split(':');
+          if (assetType && extsStr) {
+            const extensions = extsStr.split(',').map(ext => ext.trim());
+            parts.push({
+              assetType: assetType.trim(),
+              allowedExtensions: extensions
+            });
+          }
+        });
+        return parts;
+      }
+    },
+    {
+      type: 'number',
+      name: 'comboMaxSizeImage',
+      message: 'Max size for image parts (bytes):',
+      default: 2097152, // 2MB
+      when: (answers) => answers.type === 'directory' && answers.directoryContains === 'combo' &&
+        answers.comboParts && answers.comboParts.some(p => p.assetType === 'image')
+    },
+    {
+      type: 'number',
+      name: 'comboMaxSizeJson',
+      message: 'Max size for JSON parts (bytes):',
+      default: 5120, // 5KB
+      when: (answers) => answers.type === 'directory' && answers.directoryContains === 'combo' &&
+        answers.comboParts && answers.comboParts.some(p => p.assetType === 'json')
+    },
+    {
+      type: 'number',
+      name: 'comboMaxSizeText',
+      message: 'Max size for text parts (bytes):',
+      default: 51200, // 50KB
+      when: (answers) => answers.type === 'directory' && answers.directoryContains === 'combo' &&
+        answers.comboParts && answers.comboParts.some(p => p.assetType === 'text')
     },
     {
       type: 'confirm',
@@ -255,39 +326,77 @@ async function main() {
       default: true
     }
   ]);
-  
+
   // Use provided path or answered path
   const targetPath = filePath || answers.path;
-  
+
   // Create file if needed
   if (!fs.existsSync(targetPath)) {
     if (answers.createFile !== false && answers.type !== 'directory') {
       createStarterFile(targetPath, answers.type);
     }
   }
-  
+
   // Generate handler path
   const handlerFileName = path.basename(targetPath, path.extname(targetPath)) + '.js';
   const handlerPath = `handlers/${handlerFileName}`;
-  
+
   // Build asset object
   const asset = {
     path: targetPath,
     type: answers.type,
     label: answers.label,
     description: answers.description,
-    handler: handlerPath,
-    maxSize: answers.maxSize,
-    allowedExtensions: answers.allowedExtensions
+    handler: handlerPath
   };
-  
+
+  // Handle directory assets with contains structure
+  if (answers.type === 'directory') {
+    if (answers.directoryContains === 'combo') {
+      // Build combo structure with parts
+      const parts = answers.comboParts.map(part => {
+        const partObj = {
+          assetType: part.assetType,
+          allowedExtensions: part.allowedExtensions
+        };
+
+        // Add maxSize based on asset type
+        if (part.assetType === 'image' && answers.comboMaxSizeImage) {
+          partObj.maxSize = answers.comboMaxSizeImage;
+        } else if (part.assetType === 'json' && answers.comboMaxSizeJson) {
+          partObj.maxSize = answers.comboMaxSizeJson;
+        } else if (part.assetType === 'text' && answers.comboMaxSizeText) {
+          partObj.maxSize = answers.comboMaxSizeText;
+        }
+
+        return partObj;
+      });
+
+      asset.contains = {
+        type: 'combo',
+        parts: parts
+      };
+    } else {
+      // Simple directory with single asset type
+      asset.contains = {
+        type: answers.directoryContains,
+        allowedExtensions: answers.allowedExtensions,
+        maxSize: answers.maxSize
+      };
+    }
+  } else {
+    // Non-directory assets use flat structure
+    asset.maxSize = answers.maxSize;
+    asset.allowedExtensions = answers.allowedExtensions;
+  }
+
   if (answers.schema) {
     asset.schema = answers.schema;
   }
-  
+
   // Add to site-assets.json
   const siteAssets = loadSiteAssets();
-  
+
   // Check if asset already exists
   const existingIndex = siteAssets.assets.findIndex(a => a.path === targetPath);
   if (existingIndex !== -1) {
@@ -296,15 +405,15 @@ async function main() {
   } else {
     siteAssets.assets.push(asset);
   }
-  
+
   saveSiteAssets(siteAssets);
-  
+
   // Generate handler file
   if (answers.generateHandler) {
     const handlerContent = generateHandlerFile(asset);
     createHandlerFile(handlerPath, handlerContent);
   }
-  
+
   log('\n✓ Asset added successfully!', 'green');
   log(`\nNext steps:`, 'cyan');
   log(`1. Edit ${targetPath} with your content`);

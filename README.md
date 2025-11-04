@@ -28,7 +28,7 @@ Static website template with JSON-based content management system.
    - Update JSON files in `content/` directory with your data
    - Modify `content/summary.md` with your content
    - Replace images in `assets/` folder
-   - Update `content/image-descriptions.json` with your image filenames
+   - Each image can have a matching `.json` file for metadata (e.g., `photo1.webp` + `photo1.json`)
 
 4. **Open `index.html`** in browser to view
 
@@ -96,6 +96,63 @@ export function handle(data) {
   }
 }
 ```
+
+### Combo Assets
+
+Combo assets let you combine multiple files with the same name but different extensions into a single logical asset. Perfect for images with metadata:
+
+**Example:**
+```
+assets/
+  ├── photo1.webp       (image file)
+  ├── photo1.json       (metadata: alt text, description)
+  ├── photo2.jpg        (image file)
+  └── photo2.json       (metadata)
+```
+
+**Configuration in site-assets.json:**
+```json
+{
+  "type": "directory",
+  "path": "assets/gallery",
+  "contains": {
+    "type": "combo",
+    "parts": [
+      { 
+        "assetType": "image", 
+        "allowedExtensions": [".webp", ".jpg", ".png"],
+        "maxSize": 2097152
+      },
+      { 
+        "assetType": "json", 
+        "allowedExtensions": [".json"],
+        "maxSize": 5120
+      }
+    ]
+  },
+  "handler": "handlers/gallery.js"
+}
+```
+
+**Handler receives grouped data:**
+```javascript
+export function handle(comboData) {
+  Object.keys(comboData).forEach(baseName => {
+    const combo = comboData[baseName];
+    const imagePath = combo['.webp'] || combo['.jpg'];
+    const metadata = combo['.json'];
+    
+    // Use imagePath and metadata together
+    console.log(imagePath, metadata.alt);
+  });
+}
+```
+
+Benefits:
+- No separate metadata file to manage
+- Easy to add new items (just add both files with same base name)
+- Type-safe with maxSize per asset type
+- Flexible: supports any combination of file types
 
 ### Manual Asset Addition
 

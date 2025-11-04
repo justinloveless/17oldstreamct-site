@@ -1,9 +1,9 @@
 /**
- * Handler for image gallery assets
- * Populates gallery from image-descriptions.json and assets directory
+ * Handler for image gallery combo assets
+ * Populates gallery from combo assets (image + json metadata)
  */
-export function handle(imageDescriptions, galleryPath) {
-  if (!imageDescriptions || !galleryPath) return;
+export function handle(comboData) {
+  if (!comboData) return;
 
   const galleryGrid = document.getElementById('gallery-grid');
   if (!galleryGrid) return;
@@ -11,23 +11,38 @@ export function handle(imageDescriptions, galleryPath) {
   // Clear existing gallery
   galleryGrid.innerHTML = '';
 
-  // Iterate through image descriptions (keys are filenames)
-  const imageFiles = Object.keys(imageDescriptions);
-  
-  imageFiles.forEach((filename) => {
+  // Iterate through combo assets (keys are base names)
+  Object.keys(comboData).forEach((baseName) => {
+    const combo = comboData[baseName];
+
+    // Find the image file (check for different extensions)
+    let imagePath = null;
+    let metadata = null;
+
+    // Get image path (check common image extensions)
+    for (const ext of ['.webp', '.jpg', '.jpeg', '.png']) {
+      if (combo[ext]) {
+        imagePath = combo[ext];
+        break;
+      }
+    }
+
+    // Get metadata from JSON file
+    if (combo['.json']) {
+      metadata = combo['.json'];
+    }
+
+    // Skip if no image found
+    if (!imagePath) return;
+
     const galleryItem = document.createElement('div');
     galleryItem.className = 'gallery-item';
-    
+
     const img = document.createElement('img');
-    // Construct image path
-    const imagePath = `${galleryPath}/${filename}`;
     img.src = imagePath;
-    
-    // Get alt text from descriptions, default to empty string
-    const description = imageDescriptions[filename];
-    img.alt = (description && description.alt) ? description.alt : '';
-    
+    img.alt = (metadata && metadata.alt) ? metadata.alt : '';
     img.loading = 'lazy';
+
     galleryItem.appendChild(img);
     galleryGrid.appendChild(galleryItem);
   });
