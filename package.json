@@ -1,0 +1,15 @@
+{
+  "name": "property-site-template",
+  "version": "1.0.0",
+  "description": "Dynamic property listing site with content management",
+  "scripts": {
+    "add-asset": "node add-asset.js",
+    "init": "node init-new-site.js"
+  },
+  "keywords": ["property", "listing", "template", "static-site"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "inquirer": "^8.2.5"
+  }
+}
