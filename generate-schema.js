@@ -158,11 +158,6 @@ function generateSchema(jsonPath) {
 
         const schema = inferSchema(data);
 
-        // Add description if it's an object
-        if (schema.type === 'object') {
-            schema.description = `Schema for ${path.basename(jsonPath)}`;
-        }
-
         return schema;
     } catch (error) {
         if (error.code === 'ENOENT') {
@@ -176,6 +171,30 @@ function generateSchema(jsonPath) {
             log(`Error: ${error.message}`, 'red');
             process.exit(1);
         }
+    }
+}
+
+// Load site-assets.json
+function loadSiteAssets() {
+    try {
+        const data = fs.readFileSync('site-assets.json', 'utf8');
+        return JSON.parse(data);
+    } catch (error) {
+        log('Error loading site-assets.json', 'red');
+        log(`  ${error.message}`, 'red');
+        process.exit(1);
+    }
+}
+
+// Save site-assets.json
+function saveSiteAssets(assets) {
+    try {
+        fs.writeFileSync('site-assets.json', JSON.stringify(assets, null, 2));
+        log('✓ Updated site-assets.json', 'green');
+    } catch (error) {
+        log('Error saving site-assets.json', 'red');
+        log(`  ${error.message}`, 'red');
+        process.exit(1);
     }
 }
 
@@ -195,29 +214,53 @@ function main() {
         targetPath = targetPath + '.json';
     }
 
+    // Normalize path separators for comparison
+    const normalizedPath = targetPath.replace(/\\/g, '/');
+
     log(`\nGenerating schema for: ${targetPath}\n`, 'bright');
 
     const schema = generateSchema(targetPath);
     const schemaJson = JSON.stringify(schema, null, 2);
 
-    // Output options
-    const outputPath = process.argv[3] || targetPath.replace('.json', '-schema.json');
+    // Load site-assets.json
+    const siteAssets = loadSiteAssets();
 
-    if (process.argv.includes('--stdout') || process.argv.includes('-')) {
-        // Output to stdout
-        console.log(schemaJson);
-    } else {
-        // Write to file
-        try {
-            fs.writeFileSync(outputPath, schemaJson);
-            log(`✓ Schema generated: ${outputPath}`, 'green');
-            log(`\nSchema preview:`, 'cyan');
-            log(schemaJson, 'reset');
-        } catch (error) {
-            log(`Error writing to "${outputPath}": ${error.message}`, 'red');
-            process.exit(1);
+    // Find the asset with matching path
+    const assetIndex = siteAssets.assets.findIndex(asset => {
+        const assetPath = asset.path.replace(/\\/g, '/');
+        return assetPath === normalizedPath;
+    });
+
+    if (assetIndex === -1) {
+        log(`Warning: Asset with path "${normalizedPath}" not found in site-assets.json`, 'yellow');
+        log('The schema will be output to stdout instead.\n', 'yellow');
+
+        if (process.argv.includes('--stdout') || process.argv.includes('-')) {
+            console.log(schemaJson);
+        } else {
+            // Fallback: write to file
+            const outputPath = targetPath.replace('.json', '-schema.json');
+            try {
+                fs.writeFileSync(outputPath, schemaJson);
+                log(`✓ Schema generated: ${outputPath}`, 'green');
+                log(`\nSchema preview:`, 'cyan');
+                log(schemaJson, 'reset');
+            } catch (error) {
+                log(`Error writing to "${outputPath}": ${error.message}`, 'red');
+                process.exit(1);
+            }
         }
+        return;
     }
+
+    // Update the schema in site-assets.json
+    siteAssets.assets[assetIndex].schema = schema;
+    saveSiteAssets(siteAssets);
+
+    log(`✓ Schema updated for asset: ${siteAssets.assets[assetIndex].label}`, 'green');
+    log(`\nSchema preview:`, 'cyan');
+    log(schemaJson, 'reset');
+    log('');
 }
 
 // Run
