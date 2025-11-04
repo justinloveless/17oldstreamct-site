@@ -52,32 +52,13 @@ function detectFileType(filePath) {
 
 // Get schema suggestions based on file name
 function suggestSchema(filePath) {
-  const basename = path.basename(filePath, path.extname(filePath));
-  
-  // Common schemas
-  const schemas = {
-    contact: {
-      type: 'object',
-      required: ['email', 'phone'],
-      properties: {
-        email: { type: 'string', format: 'email' },
-        phone: { type: 'string' },
-        address: { type: 'string' }
-      }
-    },
-    metadata: {
-      type: 'object',
-      properties: {
-        title: { type: 'string' },
-        description: { type: 'string' },
-        keywords: { type: 'array', items: { type: 'string' } }
-      }
+  // Return a basic schema template
+  return {
+    type: 'object',
+    properties: {
+      // Add your properties here
     }
   };
-  
-  if (basename.includes('contact')) return schemas.contact;
-  if (basename.includes('meta')) return schemas.metadata;
-  return null;
 }
 
 // Generate handler code for script.js
@@ -126,7 +107,7 @@ function createStarterFile(filePath, type) {
 
 // Main function
 async function main() {
-  log('\n=== Add New Asset to Property Site ===\n', 'bright');
+  log('\n=== Add New Asset to Site ===\n', 'bright');
   
   // Get file path from command line or prompt
   let filePath = process.argv[2];

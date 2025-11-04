@@ -1,18 +1,19 @@
-# Property Site Template
+# Static Site Template
 
-Dynamic property listing site with JSON-based content management.
+Static website template with JSON-based content management system.
+
+> **Note**: This repository includes a property listing site as an example, but the pattern works for any static website. Use it as-is for property listings, or replace the content and HTML with your own use case.
 
 ## Features
 
 - **Dynamic Content Loading**: All content loaded from JSON and Markdown files
 - **Asset Management**: Centralized `site-assets.json` configuration
-- **Responsive Design**: Mobile-friendly property listing layout
-- **Image Gallery**: Lightbox with keyboard navigation
-- **Easy Content Updates**: No code changes needed to update property info
+- **Schema Validation**: Define data structure with JSON schemas
+- **CLI Tools**: Commands to easily add new content assets
+- **Easy Content Updates**: No code changes needed to update content
+- **Framework-agnostic**: Pure HTML, CSS, and vanilla JavaScript
 
 ## Quick Start
-
-### New Property Site (Recommended)
 
 1. **Use this as a GitHub template**
    - Click "Use this template" button on GitHub
@@ -23,39 +24,34 @@ Dynamic property listing site with JSON-based content management.
    npm install
    ```
 
-3. **Run initialization wizard**
-   ```bash
-   npm run init
-   ```
-   This will prompt you for property details and auto-populate content files.
-
-4. **Add your images**
+3. **Edit content files for your site**
+   - Update JSON files in `content/` directory with your data
+   - Modify `content/summary.md` with your content
    - Replace images in `assets/` folder
    - Update `content/image-descriptions.json` with your image filenames
 
-5. **Open `index.html`** in browser to view
-
-### Manual Setup
-
-1. **Clone or use as template**
-   ```bash
-   git clone <your-repo-url>
-   cd <your-repo-name>
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Edit content files**
-   - `content/property.json` - Property details (address, price, specs)
-   - `content/hero-description.json` - Hero section text
-   - `content/summary.md` - Property description and highlights
-   - `content/image-descriptions.json` - Gallery image metadata
-   - Replace images in `assets/` folder
-
 4. **Open `index.html`** in browser to view
+
+## What Makes This Template Reusable?
+
+This template separates **content** from **code**:
+- All editable content lives in JSON/Markdown files
+- `site-assets.json` defines what content exists
+- `script.js` loads content dynamically based on the config
+- Update content without touching code
+
+Perfect for:
+- Property listings, portfolios, product pages
+- Marketing landing pages
+- Documentation sites
+- Any site where content changes frequently
+
+## Example Site Structure
+
+This repository includes a property listing site as an example. You can:
+- **Keep the example** and customize it for your property listing
+- **Replace everything** with your own content and HTML structure
+- **Use as reference** to understand the pattern
 
 ## Adding New Assets
 
@@ -87,12 +83,15 @@ Central configuration defining all manageable assets:
 - JSON schemas for structured data
 - Human-readable labels and descriptions
 
-### Content Files
-- `content/property.json` - Property data matching schema
+### Content Files (Example)
+The included example is a property listing site with:
+- `content/property.json` - Property data
 - `content/hero-description.json` - Hero section text
 - `content/summary.md` - Markdown content
 - `content/image-descriptions.json` - Gallery metadata
 - `assets/` - Images and media files
+
+For your own site, create whatever content files make sense for your use case.
 
 ## Deployment
 
@@ -123,7 +122,7 @@ Assets with JSON schemas in `site-assets.json` can be validated. Schemas define:
 - Data types
 - Format constraints
 
-Example schema from `property.json`:
+Example schema:
 ```json
 {
   "type": "object",

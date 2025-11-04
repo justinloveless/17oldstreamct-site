@@ -1,19 +1,20 @@
 # Contributing Guide
 
-## Setting Up a New Property Site
+## Setting Up a New Site
 
-### Option 1: Using as a Template Repository
+### Using as a Template Repository
 
 1. Click "Use this template" on GitHub
 2. Clone your new repository
 3. Run `npm install`
-4. Update content files with your property information
+4. Update content files with your own content
+5. Modify HTML/CSS to match your needs
 
-### Option 2: Manual Clone
+### Manual Clone
 
 ```bash
-git clone <your-repo-url> my-property-site
-cd my-property-site
+git clone <your-repo-url> my-site
+cd my-site
 npm install
 ```
 
@@ -31,16 +32,16 @@ npm run add-asset content/amenities.json
 npm run add-asset existing/file.json
 ```
 
-### Example: Adding a Contact Form Data File
+### Example: Adding a Team Members Data File
 
 ```bash
-npm run add-asset content/contact-info.json
+npm run add-asset content/team.json
 ```
 
 The tool will prompt you for:
 - **Asset type**: json
-- **Label**: Contact Information
-- **Description**: Contact details for property inquiries
+- **Label**: Team Members
+- **Description**: Information about team members
 - **Max size**: 5120 (5KB)
 - **Allowed extensions**: .json
 - **Add schema?**: Yes (optional)
@@ -49,11 +50,18 @@ If you choose to add a schema, you can define:
 ```json
 {
   "type": "object",
-  "required": ["email", "phone"],
   "properties": {
-    "email": { "type": "string", "format": "email" },
-    "phone": { "type": "string" },
-    "name": { "type": "string" }
+    "members": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "role": { "type": "string" },
+          "bio": { "type": "string" }
+        }
+      }
+    }
   }
 }
 ```
@@ -61,20 +69,20 @@ If you choose to add a schema, you can define:
 ### Example: Adding a New Text Section
 
 ```bash
-npm run add-asset content/neighborhood.md
+npm run add-asset content/about.md
 ```
 
 The tool will:
-1. Create `content/neighborhood.md` with starter content
+1. Create `content/about.md` with starter content
 2. Add entry to `site-assets.json`
 3. Generate handler code like:
 
 ```javascript
-// Load Neighborhood
-const neighborhoodData = contentData['content/neighborhood.md'];
-if (neighborhoodData) {
-  // TODO: Add logic to display Neighborhood
-  // Example: document.querySelector('.neighborhood').innerHTML = neighborhoodData;
+// Load About
+const aboutData = contentData['content/about.md'];
+if (aboutData) {
+  // TODO: Add logic to display About
+  // Example: document.querySelector('.about').innerHTML = aboutData;
 }
 ```
 
@@ -86,9 +94,9 @@ if (neighborhoodData) {
 
 Example HTML addition:
 ```html
-<section class="neighborhood">
+<section class="about">
   <div class="container">
-    <!-- Content will be loaded from neighborhood.md -->
+    <!-- Content will be loaded from about.md -->
   </div>
 </section>
 ```
@@ -98,24 +106,24 @@ Example HTML addition:
 ### JSON Content
 ```json
 {
-  "title": "Nearby Amenities",
+  "title": "Our Services",
   "items": [
-    { "name": "Park", "distance": "0.3 miles" },
-    { "name": "School", "distance": "0.5 miles" }
+    { "name": "Web Development", "description": "Custom websites" },
+    { "name": "Design", "description": "UI/UX design services" }
   ]
 }
 ```
 
 ### Markdown Content
 ```markdown
-# About the Neighborhood
+# About Us
 
-This property is located in a vibrant community...
+We are a team dedicated to building great experiences...
 
-## Local Attractions
-- Shopping centers
-- Parks and trails
-- Restaurants
+## What We Do
+- Web development
+- Mobile apps
+- Consulting
 ```
 
 ## Deploying Your Site

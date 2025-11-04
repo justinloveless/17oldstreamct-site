@@ -1,12 +1,11 @@
 {
-  "name": "property-site-template",
+  "name": "static-site-template",
   "version": "1.0.0",
-  "description": "Dynamic property listing site with content management",
+  "description": "Static site template with JSON-based content management",
   "scripts": {
-    "add-asset": "node add-asset.js",
-    "init": "node init-new-site.js"
+    "add-asset": "node add-asset.js"
   },
-  "keywords": ["property", "listing", "template", "static-site"],
+  "keywords": ["template", "static-site", "json", "content-management"],
   "author": "",
   "license": "MIT",
   "dependencies": {

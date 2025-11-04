@@ -5,7 +5,6 @@
 ### Initial Setup
 ```bash
 npm install              # Install dependencies
-npm run init             # Initialize with property data (interactive)
 ```
 
 ### Adding Content
@@ -16,53 +15,53 @@ npm run add-asset           # Interactive mode (prompts for path)
 
 ## Workflow Examples
 
-### Starting a New Property Site
+### Starting a New Site
 
 1. Use template on GitHub or clone repo
 2. `npm install`
-3. `npm run init` - Enter property details
-4. Replace images in `assets/`
-5. Update `content/image-descriptions.json`
+3. Edit existing content files or add new ones with `npm run add-asset`
+4. Replace images/media in `assets/`
+5. Update HTML structure as needed
 6. Open `index.html` to preview
 
 ### Adding a New Content Section
 
-**Example: Adding testimonials**
+**Example: Adding team members data**
 
 ```bash
-npm run add-asset content/testimonials.json
+npm run add-asset content/team.json
 ```
 
 When prompted:
 - Type: `json`
-- Label: `Testimonials`
-- Description: `Customer testimonials and reviews`
+- Label: `Team Members`
+- Description: `Information about team members`
 - Generate handler: `yes`
 
 Then:
-1. Edit `content/testimonials.json` with actual testimonials
+1. Edit `content/team.json` with actual data
 2. Add generated handler code to `script.js`
-3. Add HTML section to display testimonials
+3. Add HTML section to display the content
 
 ### Adding a New Text Section
 
-**Example: Adding neighborhood info**
+**Example: Adding about page content**
 
 ```bash
-npm run add-asset content/neighborhood.md
+npm run add-asset content/about.md
 ```
 
 Creates file and adds to `site-assets.json`. Then:
-1. Edit `content/neighborhood.md` with markdown content
+1. Edit `content/about.md` with markdown content
 2. Add handler in `script.js`:
    ```javascript
-   const neighborhoodData = contentData['content/neighborhood.md'];
-   if (neighborhoodData) {
-     const section = document.querySelector('.neighborhood .container');
-     section.innerHTML = parseMarkdown(neighborhoodData); // Use your MD parser
+   const aboutData = contentData['content/about.md'];
+   if (aboutData) {
+     const section = document.querySelector('.about .container');
+     section.innerHTML = parseMarkdown(aboutData); // Use your MD parser
    }
    ```
-3. Add HTML section with class `neighborhood`
+3. Add HTML section with class `about`
 
 ## File Structure
 
@@ -73,16 +72,15 @@ Creates file and adds to `site-assets.json`. Then:
 ├── site-assets.json              # Asset configuration & schemas
 ├── package.json                  # Node dependencies & scripts
 ├── add-asset.js                  # CLI tool for adding assets
-├── init-new-site.js              # CLI tool for initialization
 │
 ├── content/                      # All editable content
-│   ├── property.json             # Property details
-│   ├── hero-description.json     # Hero section text
-│   ├── summary.md                # Property description
-│   └── image-descriptions.json   # Gallery metadata
+│   ├── property.json             # Example: Property details
+│   ├── hero-description.json     # Example: Hero section text
+│   ├── summary.md                # Example: Main content
+│   └── image-descriptions.json   # Example: Gallery metadata
 │
 └── assets/                       # Images and media
-    └── *.webp                    # Property images
+    └── *.webp                    # Example: Images
 ```
 
 ## Key Concepts
@@ -146,9 +144,9 @@ Edit CSS variables in `styles.css`:
 }
 ```
 
-### Add New Property Details
-1. Add fields to `content/property.json`
-2. Update schema in `site-assets.json`
+### Add New Data Fields
+1. Add fields to your JSON content file
+2. Update schema in `site-assets.json` (if using validation)
 3. Add display code in `script.js`
 4. Add HTML elements in `index.html`
 
