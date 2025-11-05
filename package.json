@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "Static site template with JSON-based content management",
   "scripts": {
-    "add-asset": "node add-asset.js",
-    "generate-schema": "node generate-schema.js"
+    "generate-schema": "npx -p dynaloader generate-schema",
+    "add-asset": "npx -p dynaloader add-asset"
   },
   "keywords": [
     "template",
@@ -15,7 +15,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "dynaloader": "^1.0.0",
+    "dynaloader": "^1.1.0",
     "inquirer": "^8.2.5"
   }
 }

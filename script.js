@@ -1,5 +1,5 @@
 // Site-specific code - uses generic asset-loader module
-import { loadSiteAssets } from 'dynaloader';
+import { loadSiteAssets } from './asset-loader.js';
 
 // Image gallery lightbox functionality
 let lightboxInitialized = false;
