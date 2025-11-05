@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Static site template with JSON-based content management",
   "scripts": {
+    "init": "npm install && npx -p dynaloader init",
     "generate-schema": "npx -p dynaloader generate-schema",
     "add-asset": "npx -p dynaloader add-asset"
   },
