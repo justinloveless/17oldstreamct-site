@@ -323,6 +323,33 @@ async function main() {
     },
     {
       type: 'confirm',
+      name: 'addComboJsonSchema',
+      message: 'Add JSON schema validation for JSON parts in combo?',
+      default: false,
+      when: (answers) => answers.type === 'directory' && answers.directoryContains === 'combo' &&
+        answers.comboParts && answers.comboParts.some(p => p.assetType === 'json')
+    },
+    {
+      type: 'editor',
+      name: 'comboJsonSchema',
+      message: 'Edit JSON schema for combo JSON parts (opens in editor):',
+      default: () => {
+        return JSON.stringify({
+          type: 'object',
+          properties: {}
+        }, null, 2);
+      },
+      when: (answers) => answers.addComboJsonSchema,
+      filter: (input) => {
+        try {
+          return JSON.parse(input);
+        } catch {
+          return null;
+        }
+      }
+    },
+    {
+      type: 'confirm',
       name: 'addSchema',
       message: 'Add JSON schema validation?',
       default: false,
@@ -412,6 +439,11 @@ async function main() {
           partObj.maxSize = answers.comboMaxSizeJson;
         } else if (part.assetType === 'text' && answers.comboMaxSizeText) {
           partObj.maxSize = answers.comboMaxSizeText;
+        }
+
+        // Add schema for JSON parts
+        if (part.assetType === 'json' && answers.comboJsonSchema) {
+          partObj.schema = answers.comboJsonSchema;
         }
 
         return partObj;

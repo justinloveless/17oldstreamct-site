@@ -150,7 +150,22 @@
             "allowedExtensions": [
               ".json"
             ],
-            "maxSize": 5120
+            "maxSize": 5120,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "alt": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "alt",
+                "description"
+              ]
+            }
           }
         ]
       }

@@ -198,24 +198,59 @@ function saveSiteAssets(assets) {
     }
 }
 
+// Find a sample JSON file in a directory
+function findSampleJsonFile(dirPath) {
+    try {
+        const files = fs.readdirSync(dirPath);
+        const jsonFile = files.find(f => path.extname(f).toLowerCase() === '.json');
+        return jsonFile ? path.join(dirPath, jsonFile) : null;
+    } catch (error) {
+        return null;
+    }
+}
+
 // Main function
 function main() {
-    const jsonPath = process.argv[2];
+    const inputPath = process.argv[2];
 
-    if (!jsonPath) {
-        log('\nUsage: npm run generate-schema <path-to-json-file>', 'yellow');
-        log('Example: npm run generate-schema content/property.json\n', 'cyan');
+    if (!inputPath) {
+        log('\nUsage: npm run generate-schema <path-to-json-file-or-directory>', 'yellow');
+        log('Examples:', 'cyan');
+        log('  npm run generate-schema content/property.json', 'cyan');
+        log('  npm run generate-schema gallery', 'cyan');
+        log('  npm run generate-schema gallery/some-file.json\n', 'cyan');
         process.exit(1);
     }
 
-    // Ensure .json extension
-    let targetPath = jsonPath;
-    if (path.extname(targetPath).toLowerCase() !== '.json') {
-        targetPath = targetPath + '.json';
-    }
+    // Normalize path separators
+    const normalizedInput = inputPath.replace(/\\/g, '/');
 
-    // Normalize path separators for comparison
-    const normalizedPath = targetPath.replace(/\\/g, '/');
+    // Check if it's a directory or file
+    let targetPath;
+    let isDirectory = false;
+
+    if (fs.existsSync(inputPath)) {
+        const stats = fs.statSync(inputPath);
+        isDirectory = stats.isDirectory();
+
+        if (isDirectory) {
+            // Find a sample JSON file in the directory
+            targetPath = findSampleJsonFile(inputPath);
+            if (!targetPath) {
+                log(`Error: No JSON files found in directory "${inputPath}"`, 'red');
+                process.exit(1);
+            }
+            log(`\nUsing sample file: ${targetPath}`, 'cyan');
+        } else {
+            targetPath = inputPath;
+        }
+    } else {
+        // File doesn't exist, assume it's a JSON file path
+        targetPath = inputPath;
+        if (path.extname(targetPath).toLowerCase() !== '.json') {
+            targetPath = targetPath + '.json';
+        }
+    }
 
     log(`\nGenerating schema for: ${targetPath}\n`, 'bright');
 
@@ -225,39 +260,73 @@ function main() {
     // Load site-assets.json
     const siteAssets = loadSiteAssets();
 
-    // Find the asset with matching path
-    const assetIndex = siteAssets.assets.findIndex(asset => {
-        const assetPath = asset.path.replace(/\\/g, '/');
-        return assetPath === normalizedPath;
-    });
+    // Normalize paths for comparison
+    const normalizedTargetPath = targetPath.replace(/\\/g, '/');
 
-    if (assetIndex === -1) {
-        log(`Warning: Asset with path "${normalizedPath}" not found in site-assets.json`, 'yellow');
-        log('The schema will be output to stdout instead.\n', 'yellow');
+    // Check if this is a directory asset or a file within one
+    let assetIndex = -1;
+    let isComboJson = false;
 
-        if (process.argv.includes('--stdout') || process.argv.includes('-')) {
-            console.log(schemaJson);
-        } else {
-            // Fallback: write to file
-            const outputPath = targetPath.replace('.json', '-schema.json');
-            try {
-                fs.writeFileSync(outputPath, schemaJson);
-                log(`✓ Schema generated: ${outputPath}`, 'green');
-                log(`\nSchema preview:`, 'cyan');
-                log(schemaJson, 'reset');
-            } catch (error) {
-                log(`Error writing to "${outputPath}": ${error.message}`, 'red');
-                process.exit(1);
+    if (isDirectory) {
+        // Look for directory asset matching the input
+        assetIndex = siteAssets.assets.findIndex(asset => {
+            const assetPath = asset.path.replace(/\\/g, '/');
+            return assetPath === normalizedInput && asset.type === 'directory';
+        });
+    } else {
+        // First, try to find a direct match for the file
+        assetIndex = siteAssets.assets.findIndex(asset => {
+            const assetPath = asset.path.replace(/\\/g, '/');
+            return assetPath === normalizedTargetPath;
+        });
+
+        // If not found, check if it's part of a combo directory asset
+        if (assetIndex === -1) {
+            const dir = path.dirname(normalizedTargetPath);
+            assetIndex = siteAssets.assets.findIndex(asset => {
+                const assetPath = asset.path.replace(/\\/g, '/');
+                return assetPath === dir &&
+                    asset.type === 'directory' &&
+                    asset.contains?.type === 'combo';
+            });
+            if (assetIndex !== -1) {
+                isComboJson = true;
             }
         }
+    }
+
+    if (assetIndex === -1) {
+        log(`Warning: Asset not found in site-assets.json`, 'yellow');
+        log('The schema will be output to stdout instead.\n', 'yellow');
+        console.log(schemaJson);
         return;
     }
 
-    // Update the schema in site-assets.json
-    siteAssets.assets[assetIndex].schema = schema;
-    saveSiteAssets(siteAssets);
+    const asset = siteAssets.assets[assetIndex];
 
-    log(`✓ Schema updated for asset: ${siteAssets.assets[assetIndex].label}`, 'green');
+    // Handle different asset types
+    if (isComboJson || (isDirectory && asset.contains?.type === 'combo')) {
+        // Update schema for JSON part in combo asset
+        const parts = asset.contains.parts;
+        const jsonPartIndex = parts.findIndex(p => p.assetType === 'json');
+
+        if (jsonPartIndex === -1) {
+            log('Error: No JSON part found in combo asset', 'red');
+            process.exit(1);
+        }
+
+        siteAssets.assets[assetIndex].contains.parts[jsonPartIndex].schema = schema;
+        saveSiteAssets(siteAssets);
+
+        log(`✓ Schema updated for JSON part of combo asset: ${asset.label}`, 'green');
+    } else {
+        // Update schema for regular JSON asset
+        siteAssets.assets[assetIndex].schema = schema;
+        saveSiteAssets(siteAssets);
+
+        log(`✓ Schema updated for asset: ${asset.label}`, 'green');
+    }
+
     log(`\nSchema preview:`, 'cyan');
     log(schemaJson, 'reset');
     log('');
